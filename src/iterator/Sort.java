@@ -491,6 +491,9 @@ public class Sort extends Iterator implements GlobalConst
       //      lastElem.setHdr(fld_no, junk, s_size);
       lastElem.setStrFld(_sort_fld, s);
       break;
+    case AttrType.attrInterval:
+	  lastElem.setIntervalFld(_sort_fld, Intervaltype.min_value());  // xml change
+      break;
     default:
       // don't know how to handle attrSymbol, attrNull
       //System.err.println("error in sort.java");
@@ -532,6 +535,9 @@ public class Sort extends Iterator implements GlobalConst
     case AttrType.attrString:
       //      lastElem.setHdr(fld_no, junk, s_size);
       lastElem.setStrFld(_sort_fld, s);
+      break;
+    case AttrType.attrInterval:
+      lastElem.setIntervalFld(_sort_fld, Intervaltype.max_value()); // xml change
       break;
     default:
       // don't know how to handle attrSymbol, attrNull

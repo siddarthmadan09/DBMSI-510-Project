@@ -37,6 +37,46 @@ public class Convert{
     }
   
   /**
+   * read 8 bytes from given byte array at the specified position
+   * convert it to an Interval value - xml db change
+   * @param  	data 		a byte array 
+   * @param       position  	in data[]
+   * @exception   java.io.IOException I/O errors
+   * @return      the integer 
+   */
+  public static Intervaltype getIntervalValue (int position, byte []data)
+		   throws java.io.IOException
+		    {
+		      InputStream in;
+		      DataInputStream instr;
+		      Intervaltype value = new Intervaltype();
+		      byte tmp[] = new byte[4];
+		      
+		      // copy the value from data array out to a tmp byte array
+		      System.arraycopy (data, position, tmp, 0, 4);
+		      
+		      /* creates a new data input stream to read data from the
+		       * specified input stream
+		       */
+		      in = new ByteArrayInputStream(tmp);
+		      instr = new DataInputStream(in);
+		      int start = instr.readInt();  
+		      
+	            System.arraycopy (data, position + 4, tmp, 0, 4);
+		      
+		      /* creates a new data input stream to read data from the
+		       * specified input stream
+		       */
+		      in = new ByteArrayInputStream(tmp);
+		      instr = new DataInputStream(in);
+		      int end = instr.readInt();  
+		      
+		      // assign start and end to value
+		      value.assign(start, end);
+		      
+		      return value;
+		    }
+  /**
    * read 4 bytes from given byte array at the specified position
    * convert it to a float value
    * @param  	data 		a byte array 
@@ -302,4 +342,39 @@ public class Convert{
       System.arraycopy (B, 0, data, position, 2);
       
     }
+  /*
+   * write Interval value into the given byte array at specified position
+   * xmldb change - uses 8 bytes
+   */
+  public static void setIntervalValue(Intervaltype value, int position, byte[] data)
+		  throws java.io.IOException
+  {
+      int start = value.getStart();
+      int end = value.getEnd();
+      
+	  OutputStream out = new ByteArrayOutputStream();
+      DataOutputStream outstr = new DataOutputStream (out);
+      
+      // write the value to the output stream
+      outstr.writeInt(start);  
+      
+      // creates a byte array with this output stream size and the
+      // valid contents of the buffer have been copied into it
+      byte []B = ((ByteArrayOutputStream) out).toByteArray();
+      
+      // copies contents of this byte array into data[]
+      System.arraycopy (B, 0, data, position, 4);
+      
+	  OutputStream out1 = new ByteArrayOutputStream();
+      DataOutputStream outstr1 = new DataOutputStream (out1);
+      
+      outstr1.writeInt(end);  
+      
+      // creates a byte array with this output stream size and the
+      // valid contents of the buffer have been copied into it
+      byte []B1 = ((ByteArrayOutputStream) out).toByteArray();
+      
+      // copies contents of this byte array into data[]
+      System.arraycopy (B1, 0, data, position+4, 4);
+  }
 }

@@ -42,6 +42,7 @@ public class TupleUtils
       int   t1_i,  t2_i;
       float t1_r,  t2_r;
       String t1_s, t2_s;
+      Intervaltype t1_it, t2_it;
       
       switch (fldType.attrType) 
 	{
@@ -79,6 +80,23 @@ public class TupleUtils
 	  if(t1_s.compareTo( t2_s)>0)return 1;
 	  if (t1_s.compareTo( t2_s)<0)return -1;
 	  return 0;
+	case AttrType.attrInterval:  // compare two interval types
+		try {
+		t1_it = t1.getIntervalFld(t1_fld_no);
+		t2_it = t2.getIntervalFld(t2_fld_no);
+		if(t1_it.getStart() < t2_it.getStart() && t1_it.getEnd() > t2_it.getEnd()) {
+			return 1;  // containment
+		} else if (t1_it.getStart() > t2_it.getStart() && t1_it.getEnd() < t2_it.getEnd()) {
+			return 2;  // enclosure
+		} else if ( (t1_it.getStart() > t2_it.getStart() && t1_it.getEnd() > t2_it.getEnd() ) ||
+				(t1_it.getStart() < t2_it.getStart() && t1_it.getEnd() < t2_it.getEnd() ) ) {
+			return 3;  // other overlaps 2 cases
+		} else {
+			return 0; // no overlap
+		}
+		} catch (FieldNumberOutOfBoundException e){
+			    throw new TupleUtilsException(e, "FieldNumberOutOfBoundException is caught by TupleUtils.java");
+	    }
 	default:
 	  
 	  throw new UnknowAttrType(null, "Don't know how to handle attrSymbol, attrNull");

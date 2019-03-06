@@ -390,8 +390,11 @@ public void setHdr (short numFlds,  AttrType types[], short strSizes[])
    case AttrType.attrString:
      incr = (short) (strSizes[strCount] +2);  //strlen in bytes = strlen +2
      strCount++;
-     break;       
- 
+     break;    
+    
+   case AttrType.attrInterval: //xml db change 
+	  incr = 8;
+	  break;
    default:
     throw new InvalidTypeException (null, "TUPLE: TUPLE_TYPE_ERROR");
    }
@@ -536,14 +539,26 @@ public void setHdr (short numFlds,  AttrType types[], short strSizes[])
    }
   
   // convert this field into intervaltype
-  private void getIntervalFld(int fldNo) {
-	  
+  public Intervaltype getIntervalFld(int fldNo) throws IOException, FieldNumberOutOfBoundException {
+	  Intervaltype val = new Intervaltype();
+      if ( (fldNo > 0) && (fldNo <= fldCnt))      
+       { 
+       val = Convert.getIntervalValue(fldOffset[fldNo -1], data);
+        return val;
+       }
+	 else 
+	     throw new FieldNumberOutOfBoundException (null, "TUPLE:TUPLE_FLDNO_OUT_OF_BOUND");  
   }
   
-  // set this field to intervaltype value
-  private void setIntervalFld(int fldNo, Intervaltype val) {
-	  
-  }
-  
+  // set this field to intervaltype value - xml db change
+  public Tuple setIntervalFld(int fldNo, Intervaltype val) throws IOException, FieldNumberOutOfBoundException  { 
+	    if ( (fldNo > 0) && (fldNo <= fldCnt))
+	     {
+			Convert.setIntervalValue (val, fldOffset[fldNo -1], data);
+			return this;
+	     }
+	    else 
+	     throw new FieldNumberOutOfBoundException (null, "TUPLE:TUPLE_FLDNO_OUT_OF_BOUND"); 
+  }  
 }
 

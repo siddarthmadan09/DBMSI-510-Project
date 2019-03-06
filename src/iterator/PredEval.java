@@ -89,6 +89,12 @@ public class PredEval
 		      comparison_type.attrType = in2[fld1-1].attrType;
 		    }
 		  break;
+		case AttrType.attrInterval:  // xml db change - 
+		  value.setHdr((short)1, val_type, null);
+		  value.setIntervalFld(1, temp_ptr.operand1.intervaltype);
+		  tuple1 = value;
+		  comparison_type.attrType = AttrType.attrInterval;
+		  break;
 		default:
 		  break;
 		}
@@ -121,6 +127,11 @@ public class PredEval
 		  else
 		    tuple2 = t2;
 		  break;
+		case AttrType.attrInterval:  // xml db change - 
+			  value.setHdr((short)1, val_type, null);
+			  value.setIntervalFld(1, temp_ptr.operand2.intervaltype);
+			  tuple2 = value;
+			  break;
 		default:
 		  break;
 		}
@@ -137,15 +148,19 @@ public class PredEval
 	      switch (temp_ptr.op.attrOperator)
 		{
 		case AttrOperator.aopEQ:
+		  if( temp_ptr.flag > 0 && comp_res == 3) op_res = true; // xml change
 		  if (comp_res == 0) op_res = true;
 		  break;
 		case AttrOperator.aopLT:
+		  if( temp_ptr.flag > 0 && comp_res == 2) op_res = true;
 		  if (comp_res <  0) op_res = true;
 		  break;
 		case AttrOperator.aopGT:
+		  if( temp_ptr.flag > 0 && comp_res == 1) op_res = true;
 		  if (comp_res >  0) op_res = true;
 		  break;
 		case AttrOperator.aopNE:
+		  if( temp_ptr.flag > 0 && comp_res == 0) op_res = true;
 		  if (comp_res != 0) op_res = true;
 		  break;
 		case AttrOperator.aopLE:
