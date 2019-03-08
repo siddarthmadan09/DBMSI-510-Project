@@ -4,10 +4,10 @@ public class Intervaltype {
 	int start;
 	int end;
 	
-	static int START_MIN_VALUE = -100000;
-	static int END_MIN_VALUE = -100000;
-	static int START_MAX_VALUE = -100000;
-	static int END_MAX_VALUE = -100000;
+	public static int START_MIN_VALUE = -100000;
+	public static int END_MIN_VALUE = -100000;
+	public static int START_MAX_VALUE = -100000;
+	public static int END_MAX_VALUE = -100000;
 	
 	public int getStart() {
 		return start;
