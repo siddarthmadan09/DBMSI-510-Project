@@ -6,12 +6,13 @@ public class Intervaltype {
 	
 	public static int START_MIN_VALUE = -100000;
 	public static int END_MIN_VALUE = -100000;
-	public static int START_MAX_VALUE = -100000;
-	public static int END_MAX_VALUE = -100000;
+	public static int START_MAX_VALUE = 100000;
+	public static int END_MAX_VALUE = 100000;
 	
 	public int getStart() {
 		return start;
 	}
+	
 	public void setStart(int start) {
 		this.start = start;
 	}
@@ -23,7 +24,7 @@ public class Intervaltype {
 	}
 	
 	public void assign(int a, int b) {
-		if (a > START_MIN_VALUE && a < START_MAX_VALUE && b > END_MIN_VALUE && b < END_MAX_VALUE) {
+		if (a >= START_MIN_VALUE && a <= START_MAX_VALUE && b >= END_MIN_VALUE && b <= END_MAX_VALUE) {
 		this.start = a;
 		this.end = b;
 		} else {

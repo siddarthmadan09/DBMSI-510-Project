@@ -6,7 +6,16 @@ import org.w3c.dom.Element;
 public class NodeTuple extends Tuple {
 	private Element nodeTag;
 	private Intervaltype nodeIntLabel;
+	private int level;
 	
+	public int getLevel() {
+		return level;
+	}
+
+	public void setLevel(int level) {
+		this.level = level;
+	}
+
 	public Element getNodeTag() {
 		return nodeTag;
 	}
@@ -23,7 +32,4 @@ public class NodeTuple extends Tuple {
 		this.nodeIntLabel = nodeIntLabel;
 	}
 	
-	public void convertNodeTupleToTuple() {
-		
-	}
 }

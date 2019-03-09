@@ -372,7 +372,7 @@ public class Convert{
       
       // creates a byte array with this output stream size and the
       // valid contents of the buffer have been copied into it
-      byte []B1 = ((ByteArrayOutputStream) out).toByteArray();
+      byte []B1 = ((ByteArrayOutputStream) out1).toByteArray();
       
       // copies contents of this byte array into data[]
       System.arraycopy (B1, 0, data, position+4, 4);
