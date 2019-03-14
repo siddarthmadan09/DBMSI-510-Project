@@ -1,5 +1,6 @@
 package global;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
@@ -9,6 +10,7 @@ import java.util.Stack;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -25,7 +27,7 @@ public class ParseXML {
 	public static String path = "/Users/sidmadan/Documents/cse510/xml_sample_data.xml";	
 	public static final int min = Integer.MIN_VALUE;
 	
-	public static NodeTuple convertElementToNode(Element element, int level) {
+	public static NodeTuple convertElementToNode(Element element, int level, String name) {
 		NodeTuple n = new NodeTuple();
 		Intervaltype interval = new Intervaltype();
 		interval.setStart(min);
@@ -33,6 +35,7 @@ public class ParseXML {
 		n.setNodeTag(element);
 		n.setNodeIntLabel(interval);
 		n.setLevel(level);
+		n.setName(name);
 		return n;
 	}
 	
@@ -50,51 +53,61 @@ public class ParseXML {
         
         Element root = doc.getDocumentElement();
         
-        stack.add(convertElementToNode(root, 0));
+        stack.add(convertElementToNode(root, 0 , root.getNodeName()));
         NodeTuple node;
         Intervaltype interval;
         while(!stack.isEmpty()) {
-    	   node = stack.pop();
+    	  node = stack.pop();
     	  
     	  interval = node.getNodeIntLabel();
     	  level = node.getLevel();
+    	  
     	  if(interval.getStart() == min) {
 	    	  interval.setStart(counter++);
 	    	  
 	    	  node.setNodeIntLabel(interval);
+
 	    	  stack.push(node);
-	    	  NodeList entries = node.getNodeTag().getChildNodes();
-    	    
-	          for (int i=entries.getLength() -1; i >= 0; i--) {
-	        	  if(entries.item(i).getNodeType() == Node.ELEMENT_NODE){
-	                    Element element = (Element) entries.item(i);
-	    	            stack.push(convertElementToNode(element, level + 1 ));
-	    	            
-	        	  } else if( entries.item(i).hasAttributes() ) {
-	        		  NamedNodeMap namedNodeMap   = entries.item(i).getAttributes();
-	        		  for(i = 0 ; i < namedNodeMap.getLength() ; i++) {
-	        	          Element element = (Element) namedNodeMap.item(i);
-		    	         stack.push(convertElementToNode(element, level + 1 ));
-	        		  }
-	        	  } 
-	          }
+	    	  if( node.getNodeTag() != null) {
+	    		  NodeList entries = node.getNodeTag().getChildNodes();
+	    		  
+	    		  if (node.getNodeTag().getChildNodes().item(0).getNodeType() == Node.TEXT_NODE
+	    				  && node.getNodeTag().getChildNodes().getLength() == 1 ) {
+	    		      stack.push(convertElementToNode(null, level + 1, node.getNodeTag().getTextContent()));  
+	    		  }
+	    		  
+		          for (int i = entries.getLength() -1; i >= 0; i--) {
+		        	  if(entries.item(i).getNodeType() == Node.ELEMENT_NODE) {
+		                    Element element = (Element) entries.item(i);
+		    	            stack.push(convertElementToNode(element, level + 1, element.getNodeName()));
+		    	            
+		    	            if( entries.item(i).hasAttributes() ) {
+		  	        		  NamedNodeMap namedNodeMap   = entries.item(i).getAttributes();
+		  	        		System.out.println("Found element " + namedNodeMap.getLength());
+			  	        		for(int j = 0 ; j < namedNodeMap.getLength() ; j++) {
+		
+				  	        	         Attr attrname = (Attr) namedNodeMap.item(j);
+				  	        	         
+				  		    	        stack.push(convertElementToNode(null, level + 1, attrname.getName()));
+		
+				  		    	        stack.push(convertElementToNode( null, level + 2, attrname.getValue() ));         			
+			  	        		 }       
+		    	            } 
+		        	  } 
+		          }
+	         }
+	    		  
 	          
     	  } else {
     		  
     		  interval = node.getNodeIntLabel();
     		  interval.setEnd(counter++);
     		  node.setNodeIntLabel(interval);
-    		  if(node.getNodeTag().getNodeType() == Node.ELEMENT_NODE){
-//    			  System.out.println("Found element " + node.getNodeTag().getTagName() + " "
-//    					  +  node.getNodeIntLabel().getStart() + " " + node.getLevel() + " " + node.getNodeIntLabel().getEnd());
-    			  nodes.add(node);
-    		  } else  if(node.getNodeTag().getNodeType() == Node.ELEMENT_NODE){
-//    			  System.out.println("Found element " + node.getNodeTag().getTagName() + " "
-//				  +  node.getNodeIntLabel().getStart() + " " + node.getLevel() + " " + node.getNodeIntLabel().getEnd());
-    			  	nodes.add(node);
-    		  }
-    			  
+   			  System.out.println("Found element " + node.getName() + " "
+   					  +  node.getNodeIntLabel().getStart() + " " + node.getLevel() + " " + node.getNodeIntLabel().getEnd() + " " +  node.getName());
+   			  nodes.add(node);
 
+    			  
     		  
     		  // todo: for saving tuple 
     		  

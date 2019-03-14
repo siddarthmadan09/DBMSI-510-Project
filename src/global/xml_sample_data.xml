@@ -1,22 +1,30 @@
-<class>
-   <student rollno = "393">
-      <firstname>dinkar</firstname>
+<!-- <class>
+   <student rollno = "393" course="dbmsi">
+      <firstname >dinkar</firstname>
       <lastname>kad</lastname>
       <nickname>dinkar</nickname>
       <marks>85</marks>
    </student>
    
-   <student rollno = "493">
-      <firstname>Vaneet</firstname>
+   <student rollno = "493" course="dds">
+      <firstname course1="monono">Vaneet</firstname>
       <lastname>Gupta</lastname>
       <nickname>vinni</nickname>
       <marks>95</marks>
    </student>
    
    <student rollno = "593">
-      <firstname>jasvir</firstname>
+      <firstname course1="mononosssd">jasvir</firstname>
       <lastname>singn</lastname>
       <nickname>jazz</nickname>
       <marks>90</marks>
    </student>
-</class>
+</class> -->
+
+<Ref num="2" pos="ERRATUM">
+<Author>Mueller D</Author>
+<Author>Rehbein M</Author>
+<Author>Baumeister H</Author>
+<Author>Richter D</Author>
+<Cite>Nucleic Acids Res. 20:2624-2624(1992)</Cite>
+</Ref>

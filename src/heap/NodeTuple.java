@@ -7,7 +7,16 @@ public class NodeTuple extends Tuple {
 	private Element nodeTag;
 	private Intervaltype nodeIntLabel;
 	private int level;
+	private String name;
 	
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
 	public int getLevel() {
 		return level;
 	}
