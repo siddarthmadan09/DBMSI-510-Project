@@ -771,7 +771,7 @@ public boolean runTests () {
     return true;
   }
   
-  public static boolean test7 ()  {
+  protected  boolean test7 ()  {
 		String path = "/Users/sidmadan/Documents/cse510/xml_sample_data.xml";	
 	    System.out.println ("\n  Test 7: Insert and scan fixed-size records\n");
 	    boolean status = OK;
@@ -812,7 +812,11 @@ public boolean runTests () {
 //		rec.fval = (float) (i*2.5);
 
 		rec.interval = n.getNodeIntLabel();
+		if(n.getNodeTag() != null) {
 		rec.name = n.getNodeTag().getTagName();
+		} else {
+			rec.name = n.getName();
+		}
 		rec.ival = n.getLevel();
 
 		try {
