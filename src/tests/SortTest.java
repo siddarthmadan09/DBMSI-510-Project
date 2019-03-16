@@ -7,6 +7,9 @@ import diskmgr.*;
 import heap.*;
 import iterator.*;
 import index.*;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 
@@ -44,8 +47,52 @@ class SORTDriver extends TestDriver
 	"sungk", "susanc", "tak", "thiodore", "ulloa", "vharvey", "waic",
 	"wan", "wawrzon", "wenchao", "wlau", "xbao", "xiaoming", "xin", 
 	"yi-chun", "yiching", "yuc", "yung", "yuvadee", "zmudzin" };
+  
+  private static String data3[] = {
+		  
+		  "393","-99999","-99998",
+		  "rollno","-99997","-99996",
+		  "mmomo","-99995","-99994",
+		  "course","-99993","-99992",
+		  "xffggf","-99989","-99988",
+		  "firstname","-99990","-99987",
+		  "kad","-99985","-99984",
+		  "lastname","-99986","-99983",
+		  "dinkar","-99981","-99980",
+		  "nickname","-99982","-99979",
+		  "85","-99977","-99976",
+		  "marks","-99978","-99975",
+		  "student","-99991","-99974",
+		  "493","-99973","-99972",
+		  "rollno","-99971","-99970",
+		  "mmomo","-99969","-99968",
+		  "course","-99967","-99966",
+		  "Vaneet","-99963","-99962",
+		  "firstname","-99964","-99961",
+		  "Gupta","-99959","-99958",
+		  "lastname","-99960","-99957",
+		  "vinni","-99955","-99954",
+		  "nickname","-99956","-99953",
+		  "95","-99951","-99950",
+		  "marks","-99952","-99949",
+		  "student","-99965","-99948",
+		  "593","-99947","-99946",
+		  "rollno","-99945","-99944",
+		  "mmomo","-99943","-99942",
+		  "course","-99941","-99940",
+		  "jasvir","-99937","-99936",
+		  "firstname","-99938","-99935",
+		  "singn","-99933","-99932",
+		  "lastname","-99934","-99931",
+		  "jazz","-99929","-99928",
+		  "nickname","-99930","-99927",
+		  "90","-99925","-99924",
+		  "marks","-99926","-99923",
+		  "student","-99939","-99922",
+		  "class","-100000","-99921"
+  };
 
-  private static int   NUM_RECORDS = data2.length; 
+  private static int   NUM_RECORDS = data3.length; 
   private static int   LARGE = 1000; 
   private static short REC_LEN1 = 32; 
   private static short REC_LEN2 = 160; 
@@ -933,7 +980,181 @@ class SORTDriver extends TestDriver
   {
     return true;
   }
-    
+  
+  /*********************XML changes************************/
+  protected boolean test7()
+  {
+	  System.out.println("------------------------ TEST 7 --------------------------");
+	    
+		
+	  
+	    boolean status = OK;
+
+	    AttrType[] attrType = new AttrType[2];
+	    attrType[0] = new AttrType(AttrType.attrString);
+	    attrType[1] = new AttrType(AttrType.attrInterval);
+	    short[] attrSize = new short[2];
+	    //attrSize[0] = REC_LEN1;
+	    //attrSize[1] = REC_LEN2;
+	    attrSize[0] = 80;
+	    attrSize[1] = 128;
+	    TupleOrder[] order = new TupleOrder[1];
+	    order[0] = new TupleOrder(TupleOrder.Ascending);
+	   // order[1] = new TupleOrder(TupleOrder.Descending);
+	    
+	    // create a tuple of appropriate size
+	    Tuple t = new Tuple();
+	    try {
+	      t.setHdr((short) 2, attrType, attrSize);
+	    }
+	    catch (Exception e) {
+	      status = FAIL;
+	      e.printStackTrace();
+	    }
+
+	    int size = t.size();
+	    
+	    // Create unsorted data file "test1.in"
+	    RID             rid;
+	    Heapfile        f = null;
+	    try {
+	      f = new Heapfile("test7.in");
+	    }
+	    catch (Exception e) {
+	      status = FAIL;
+	      e.printStackTrace();
+	    }
+	    
+	    t = new Tuple(size);
+	    try {
+	      t.setHdr((short) 2, attrType, attrSize);
+	    }
+	    catch (Exception e) {
+	      status = FAIL;
+	      e.printStackTrace();
+	    }
+	    
+	    for (int i=0; i<120; i+=3) {
+	      try {
+		t.setStrFld(1, data3[i]);
+		Intervaltype intervaltype = new Intervaltype();
+		intervaltype.setStart(Integer.parseInt(data3[i+1]));
+		intervaltype.setEnd(Integer.parseInt(data3[i+2]));
+		t.setIntervalFld(2, intervaltype);
+	      }
+	      catch (Exception e) {
+		status = FAIL;
+		e.printStackTrace();
+	      }
+	      
+	      try {
+		rid = f.insertRecord(t.returnTupleByteArray());
+		System.out.println(t.getStrFld(1));
+	      }
+	      catch (Exception e) {
+		status = FAIL;
+		e.printStackTrace();
+	      }
+	    }
+
+	    // create an iterator by open a file scan
+	    FldSpec[] projlist = new FldSpec[2];
+	    RelSpec rel = new RelSpec(RelSpec.outer); 
+	    projlist[0] = new FldSpec(rel, 1);
+	    projlist[1] = new FldSpec(rel, 2);
+	    
+	    FileScan fscan = null;
+	    
+	    try {
+	      fscan = new FileScan("test7.in", attrType, attrSize, (short) 2, 2, projlist, null);
+	    }
+	    catch (Exception e) {
+	      status = FAIL;
+	      e.printStackTrace();
+	    }
+
+	    // Sort "test1.in" 
+	    Sort sort = null;
+	    try {
+	      sort = new Sort(attrType, (short) 2, attrSize, fscan, 2, order[0], REC_LEN1, SORTPGNUM);
+	    }
+	    catch (Exception e) {
+	      status = FAIL;
+	      e.printStackTrace();
+	    }
+	    
+
+	    int count = 0;
+	    t = null;
+	    String outval = null;
+	    
+	    try {
+	      t = sort.get_next();
+	    }
+	    catch (Exception e) {
+	      status = FAIL;
+	      e.printStackTrace(); 
+	    }
+
+	    boolean flag = true;
+	    
+	    while (t != null) {
+	      if (count >= NUM_RECORDS) {
+		System.err.println("Test7 -- OOPS! too many records");
+		status = FAIL;
+		flag = false; 
+		break;
+	      }
+	      
+	      try {
+		outval = t.getStrFld(1);
+	      }
+	      catch (Exception e) {
+		status = FAIL;
+		e.printStackTrace();
+	      }
+	      System.out.println("Outval"+outval);
+	  /*  if (outval.compareTo(data2[count]) != 0) {
+		System.err.println("outval = " + outval + "\tdata2[count] = " + data2[count]);
+		
+		System.err.println("Test7 -- OOPS! test7.out not sorted");
+		status = FAIL;
+	      }*/
+	      count++;
+
+	      try {
+		t = sort.get_next();
+	      }
+	      catch (Exception e) {
+		status = FAIL;
+		e.printStackTrace();
+	      }
+	    }
+	    if (count < 40) {
+	    	System.out.println(count);
+		System.err.println("Test7 -- OOPS! too few records");
+		status = FAIL;
+	    }
+	    else if (flag && status) {
+	      System.err.println("Test7 -- Sorting OK");
+	    }
+
+	    // clean up
+	    try {
+	      sort.close();
+	    }
+	    catch (Exception e) {
+	      status = FAIL;
+	      e.printStackTrace();
+	    }
+	    
+	    System.err.println("------------------- TEST 7 completed ---------------------\n");
+	    
+	    return status;
+
+	  
+  }
+  
   protected String testName()
   {
     return "Sort";
