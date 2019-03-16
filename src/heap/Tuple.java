@@ -416,7 +416,9 @@ public void setHdr (short numFlds,  AttrType types[], short strSizes[])
    case AttrType.attrString:
      incr =(short) ( strSizes[strCount] +2);  //strlen in bytes = strlen +2
      break;
-
+   case AttrType.attrInterval: //xml db change 
+		  incr = 8;
+		  break;
    default:
     throw new InvalidTypeException (null, "TUPLE: TUPLE_TYPE_ERROR");
    }
@@ -471,7 +473,7 @@ public void setHdr (short numFlds,  AttrType types[], short strSizes[])
   int i, val;
   float fval;
   String sval;
-
+Intervaltype interval;
   System.out.print("[");
   for (i=0; i< fldCnt-1; i++)
    {
@@ -492,6 +494,10 @@ public void setHdr (short numFlds,  AttrType types[], short strSizes[])
      System.out.print(sval);
      break;
   
+   case AttrType.attrInterval:
+	   interval = Convert.getIntervalValue(fldOffset[i], data);
+	   System.out.print(interval);
+	   break;
    case AttrType.attrNull:
    case AttrType.attrSymbol:
      break;
