@@ -213,7 +213,9 @@ public class Sort extends Iterator implements GlobalConst
       
       comp_res = TupleUtils.CompareTupleWithValue(sortFldType, cur_node.tuple, _sort_fld, lastElem);  // need tuple_utils.java
       
-      if ((comp_res < 0 && order.tupleOrder == TupleOrder.Ascending) || (comp_res > 0 && order.tupleOrder == TupleOrder.Descending)) {
+      if ((comp_res < 0 && order.tupleOrder == TupleOrder.Ascending) || 
+    		  (comp_res > 0 && order.tupleOrder == TupleOrder.Descending)
+    				  || (comp_res==1 && sortFldType.toString()== "attrInterval") ){
 	// doesn't fit in current run, put into the other queue
 	try {
 	  pother_Q.enq(cur_node);
@@ -491,12 +493,15 @@ public class Sort extends Iterator implements GlobalConst
       //      lastElem.setHdr(fld_no, junk, s_size);
       lastElem.setStrFld(_sort_fld, s);
       break;
+      
     case AttrType.attrInterval:
-	  lastElem.setIntervalFld(_sort_fld, Intervaltype.min_value());  // xml change
-      break;
+    	lastElem.setIntervalFld(_sort_fld, Intervaltype.min_value());
+        break;
+      
     default:
       // don't know how to handle attrSymbol, attrNull
       //System.err.println("error in sort.java");
+    	System.out.println("Sort fld attr type : "+sortFldType.attrType +" " +lastElem.getStrFld(1));
       throw new UnknowAttrType("Sort.java: don't know how to handle attrSymbol, attrNull");
     }
     
@@ -535,9 +540,6 @@ public class Sort extends Iterator implements GlobalConst
     case AttrType.attrString:
       //      lastElem.setHdr(fld_no, junk, s_size);
       lastElem.setStrFld(_sort_fld, s);
-      break;
-    case AttrType.attrInterval:
-      lastElem.setIntervalFld(_sort_fld, Intervaltype.max_value()); // xml change
       break;
     default:
       // don't know how to handle attrSymbol, attrNull
