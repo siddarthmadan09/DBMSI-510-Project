@@ -82,19 +82,27 @@ public class TupleUtils
 	  return 0;
 	case AttrType.attrInterval:  // compare two interval types
 		try {
+		System.out.println(" inside interval");
 		t1_it = t1.getIntervalFld(t1_fld_no);
 		t2_it = t2.getIntervalFld(t2_fld_no);
-		if(t1_it.getStart() < t2_it.getStart() && t1_it.getEnd() > t2_it.getEnd()) {
+		System.out.println(" s1 " + t1_it.getStart() + " e1: " + t1_it.getEnd() + " s2: " + t2_it.getStart() + " e2: "+ t2_it.getEnd());
+		
+		
+		if(t1_it.getStart() <= t2_it.getStart() && t1_it.getEnd() > t2_it.getEnd()) {
+			System.out.println("if 1");
 			return 1;  // containment
-		} else if (t1_it.getStart() > t2_it.getStart() && t1_it.getEnd() < t2_it.getEnd()) {
+		} else if (t1_it.getStart() >= t2_it.getStart() && t1_it.getEnd() < t2_it.getEnd()) {
+			System.out.println("if 2");
 			return 2;  // enclosure
-		} else if ( (t1_it.getStart() > t2_it.getStart() && t1_it.getEnd() > t2_it.getEnd() ) ||
-				(t1_it.getStart() < t2_it.getStart() && t1_it.getEnd() < t2_it.getEnd() ) ) {
+		} else if ( (t1_it.getStart() >= t2_it.getStart() && t1_it.getEnd() > t2_it.getEnd() ) ||
+				(t1_it.getStart() <= t2_it.getStart() && t1_it.getEnd() < t2_it.getEnd() ) ) {
 			if ( t1_it.getEnd() < t2_it.getStart() || t2_it.getEnd() < t1_it.getStart() ) {
+				System.out.println("if 3");
 				return 0;    // no overlap
 			}
 			
 			else {
+				System.out.println("if 4");
 				return 3; // other overlaps 2 cases
 			}
 
@@ -104,6 +112,7 @@ public class TupleUtils
 	    }
 	
 	default:
+		System.out.println("attr type"+fldType.attrType);
 	  
 	  throw new UnknowAttrType(null, "Don't know how to handle attrSymbol, attrNull");
 	  
