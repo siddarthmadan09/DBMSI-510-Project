@@ -90,10 +90,15 @@ public class TupleUtils
 			return 2;  // enclosure
 		} else if ( (t1_it.getStart() > t2_it.getStart() && t1_it.getEnd() > t2_it.getEnd() ) ||
 				(t1_it.getStart() < t2_it.getStart() && t1_it.getEnd() < t2_it.getEnd() ) ) {
-			return 3;  // other overlaps 2 cases
-		} else {
-			return 0; // no overlap
-		}
+			if ( t1_it.getEnd() < t2_it.getStart() || t2_it.getEnd() < t1_it.getStart() ) {
+				return 0;    // no overlap
+			}
+			
+			else {
+				return 3; // other overlaps 2 cases
+			}
+
+		} 
 		} catch (FieldNumberOutOfBoundException e){
 			    throw new TupleUtilsException(e, "FieldNumberOutOfBoundException is caught by TupleUtils.java");
 	    }
@@ -216,6 +221,15 @@ public class TupleUtils
 	    throw new TupleUtilsException(e, "FieldNumberOutOfBoundException is caught by TupleUtils.java");
 	  }
 	  break;
+	case AttrType.attrInterval:
+		try {
+			value.setIntervalFld(fld_no, tuple.getIntervalFld(fld_no));
+		}
+	
+		catch (FieldNumberOutOfBoundException e){
+		    throw new TupleUtilsException(e, "FieldNumberOutOfBoundException is caught by TupleUtils.java");
+		}
+		break;
 	default:
 	  throw new UnknowAttrType(null, "Don't know how to handle attrSymbol, attrNull");
 	  
