@@ -371,18 +371,124 @@ class JoinsDriver implements GlobalConst {
     
   }
   
+  
+  
+  public JoinsDriver(String path) {
+	    
+	    
+	    String dbpath = "/tmp/"+System.getProperty("user.name")+".minibase.jointestdb"; 
+	    String logpath = "/tmp/"+System.getProperty("user.name")+".joinlog";
+
+	    String remove_cmd = "/bin/rm -rf ";
+	    String remove_logcmd = remove_cmd + logpath;
+	    String remove_dbcmd = remove_cmd + dbpath;
+	    String remove_joincmd = remove_cmd + dbpath;
+
+	    try {
+	      Runtime.getRuntime().exec(remove_logcmd);
+	      Runtime.getRuntime().exec(remove_dbcmd);
+	      Runtime.getRuntime().exec(remove_joincmd);
+	    }
+	    catch (IOException e) {
+	      System.err.println (""+e);
+	    }
+
+	   
+	    /*
+	    ExtendedSystemDefs extSysDef = 
+	      new ExtendedSystemDefs( "/tmp/minibase.jointestdb", "/tmp/joinlog",
+				      1000,500,200,"Clock");
+	    */
+
+	    SystemDefs sysdef = new SystemDefs( dbpath, 1000, NUMBUF, "Clock" );
+	    
+	    // creating the XML Interval relation
+	    AttrType [] Stypes = new AttrType[3];
+	    Stypes[0] = new AttrType (AttrType.attrInterval);
+	    Stypes[1] = new AttrType (AttrType.attrInteger);
+	    Stypes[2] = new AttrType (AttrType.attrString);
+
+	    //SOS // Max Size of String is 5 chars
+	    short [] Ssizes = new short [1];
+	    Ssizes[0] = 10; //first elt. is 30
+	    
+	    Tuple t = new Tuple();
+	    boolean status = true;
+		try {
+	      t.setHdr((short) 3,Stypes, Ssizes);
+	    }
+	    catch (Exception e) {
+	      System.err.println("*** error in Tuple.setHdr() ***");
+	      status = FAIL;
+	      e.printStackTrace();
+	    }
+	    
+	    int size = t.size();
+	    
+	    // inserting the tuple into file "sailors"
+	    RID             rid;
+	    Heapfile        f = null;
+	    try {
+	      f = new Heapfile("xml.in");
+	    }
+	    catch (Exception e) {
+	      System.err.println("*** error in Heapfile constructor ***");
+	      status = FAIL;
+	      e.printStackTrace();
+	    }
+	    
+	    t = new Tuple(size);
+	    try {
+	      t.setHdr((short) 3, Stypes, Ssizes);
+	    }
+	    catch (Exception e) {
+	      System.err.println("*** error in Tuple.setHdr() ***");
+	      status = FAIL;
+	      e.printStackTrace();
+	    }
+	    
+	    List<NodeTuple> nodes = null;
+		try {
+			nodes = global.ParseXML.parse(path);
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+	    
+	    
+	    for (NodeTuple node : nodes) {
+	      try {
+		t.setIntervalFld(1, node.getNodeIntLabel());
+		t.setIntFld(2, node.getLevel());
+		t.setStrFld(3, node.getName());
+		
+	      }
+	      catch (Exception e) {
+		System.err.println("*** Heapfile error in Tuple.setStrFld() ***");
+		status = FAIL;
+		e.printStackTrace();
+	      }
+	      
+	      try {
+		rid = f.insertRecord(t.returnTupleByteArray());
+	      }
+	      catch (Exception e) {
+		System.err.println("*** error in Heapfile.insertRecord() ***");
+		status = FAIL;
+		e.printStackTrace();
+	      }      
+	    }
+	    if (status != OK) {
+	      //bail out
+	      System.err.println ("*** Error creating relation for sailors");
+	      Runtime.getRuntime().exit(1);
+	    }  
+	  }
+	  
   public boolean runTests() {
     
     Disclaimer();
-    Query1();
-    
-    Query2();
-    Query3();
-    
-   
-    Query4();
-    Query5();
-    Query6();
+    QueryXML();
     
     
     System.out.print ("Finished joins testing"+"\n");
@@ -390,6 +496,18 @@ class JoinsDriver implements GlobalConst {
     
     return true;
   }
+  private void QueryXML_CondExpr(CondExpr[] expr) {
+
+	    expr[0].next  = null;
+	    expr[0].op    = new AttrOperator(AttrOperator.aopGT);
+	    expr[0].type1 = new AttrType(AttrType.attrSymbol);
+	    expr[0].type2 = new AttrType(AttrType.attrSymbol);
+	    expr[0].operand1.symbol = new FldSpec (new RelSpec(RelSpec.outer),1);
+	    expr[0].operand2.symbol = new FldSpec (new RelSpec(RelSpec.innerRel),1);
+	    expr[1] = null;
+	    
+	 
+	  }
 
   private void Query1_CondExpr(CondExpr[] expr) {
 
@@ -526,6 +644,221 @@ class JoinsDriver implements GlobalConst {
     expr2[2] = null;
   }
 
+  public void QueryXML() {
+	    
+	  System.out.print("**********************QueryXML strating *********************\n");
+      boolean status = OK;
+      
+      CondExpr [] leftFilter  = new CondExpr[2];
+      leftFilter[0] = new CondExpr();
+      
+      leftFilter[0].next  = null;
+      leftFilter[0].op    = new AttrOperator(AttrOperator.aopEQ);
+      leftFilter[0].type1 = new AttrType(AttrType.attrSymbol);
+      leftFilter[0].type2 = new AttrType(AttrType.attrString);
+      leftFilter[0].operand1.symbol = new FldSpec (new RelSpec(RelSpec.outer),3);
+      leftFilter[0].operand2.string = "stud";
+      
+      leftFilter[1] = null;
+      
+      CondExpr [] rightFilter = new CondExpr[2];
+      rightFilter[0] = new CondExpr();
+      
+      rightFilter[0].next  = null;
+      rightFilter[0].op    = new AttrOperator(AttrOperator.aopEQ);
+      rightFilter[0].type1 = new AttrType(AttrType.attrSymbol);
+      rightFilter[0].type2 = new AttrType(AttrType.attrString);
+      rightFilter[0].operand1.symbol = new FldSpec (new RelSpec(RelSpec.outer),3);
+      rightFilter[0].operand2.string = "last";
+      rightFilter[1] = null;
+            
+      CondExpr [] outFilter = new CondExpr[2];
+      outFilter[0] = new CondExpr();
+      
+      QueryXML_CondExpr(outFilter);
+      Tuple t = new Tuple();
+      t = null;
+      
+      AttrType [] Stypes = {
+	new AttrType(AttrType.attrInterval),  
+	new AttrType(AttrType.attrInteger), 
+	new AttrType(AttrType.attrString)
+      };
+    
+      short []   Ssizes = new short[1];
+      Ssizes[0] = 10;
+      
+      
+      AttrType [] Rtypes = {
+	new AttrType(AttrType.attrInterval), 
+	new AttrType(AttrType.attrInteger), 
+	new AttrType(AttrType.attrString), 
+      };
+      
+      short  []  Rsizes = new short[1] ;
+      Rsizes[0] = 10;
+      
+      /*AttrType [] Btypes = {
+	new AttrType(AttrType.attrInteger), 
+	new AttrType(AttrType.attrString), 
+	new AttrType(AttrType.attrString), 
+      };
+      
+      short  []  Bsizes = new short[2];
+      Bsizes[0] =30;
+      Bsizes[1] =20;
+      
+      
+      AttrType [] Jtypes = {
+	new AttrType(AttrType.attrString), 
+	new AttrType(AttrType.attrInteger), 
+      };
+      
+      short  []  Jsizes = new short[1];
+      Jsizes[0] = 30;
+      AttrType [] JJtype = {
+	new AttrType(AttrType.attrString), 
+      };
+      
+      short [] JJsize = new short[1];
+      JJsize[0] = 30; 
+      
+      */
+      
+      FldSpec []  proj1 = {
+    			new FldSpec(new RelSpec(RelSpec.outer), 1),
+    			new FldSpec(new RelSpec(RelSpec.outer), 2),
+    		    new FldSpec(new RelSpec(RelSpec.outer), 3),
+    		    new FldSpec(new RelSpec(RelSpec.innerRel), 1),
+    		    new FldSpec(new RelSpec(RelSpec.innerRel), 2),
+    		    new FldSpec(new RelSpec(RelSpec.innerRel), 3)
+      }; // S.sname, R.bid
+      
+      /*FldSpec [] proj2  = {
+	new FldSpec(new RelSpec(RelSpec.outer), 1)
+      };
+      */
+      FldSpec [] Sprojection = {
+	new FldSpec(new RelSpec(RelSpec.outer), 1),
+	new FldSpec(new RelSpec(RelSpec.outer), 2),
+    new FldSpec(new RelSpec(RelSpec.outer), 3),
+
+      };
+      
+      AttrType [] JJtype = {
+    		  new AttrType(AttrType.attrInterval),
+    		  new AttrType(AttrType.attrInteger),
+    			new AttrType(AttrType.attrString),
+
+      		  new AttrType(AttrType.attrInterval),
+      		  new AttrType(AttrType.attrInteger),
+      			new AttrType(AttrType.attrString),
+      			
+    		      };
+      
+      FileScan am = null;
+      try {
+	am  = new FileScan("xml.in", Stypes, Ssizes, 
+			   (short)3, (short)3,
+			   Sprojection, leftFilter);
+      }
+      catch (Exception e) {
+	status = FAIL;
+	System.err.println (""+e);
+	e.printStackTrace();
+      }
+      
+      if (status != OK) {
+	//bail out
+	
+	System.err.println ("*** Error setting up scan for sailors");
+	Runtime.getRuntime().exit(1);
+      }
+      
+      NestedLoopsJoins inl = null;
+      try {
+	inl = new NestedLoopsJoins (Stypes, 3, Ssizes,
+				    Rtypes, 3, Rsizes,
+				    10,
+				  am, "xml.in",
+				    outFilter, rightFilter, proj1, 6);
+      }
+      catch (Exception e) {
+	System.err.println ("*** Error preparing for nested_loop_join");
+	System.err.println (""+e);
+	e.printStackTrace();
+	Runtime.getRuntime().exit(1);
+      }
+     
+   //   System.out.print( "After nested loop join S.sid|><|R.sid.\n");
+	
+    /*  NestedLoopsJoins nlj = null;
+      try {
+	nlj = new NestedLoopsJoins (Jtypes, 2, Jsizes,
+				    Btypes, 3, Bsizes,
+				    10,
+				    inl, "boats.in",
+				    outFilter2, null, proj2, 1);
+      }
+      catch (Exception e) {
+	System.err.println ("*** Error preparing for nested_loop_join");
+	System.err.println (""+e);
+	e.printStackTrace();
+	Runtime.getRuntime().exit(1);
+      }
+      
+      System.out.print( "After nested loop join R.bid|><|B.bid AND B.color=red.\n");
+      
+      TupleOrder ascending = new TupleOrder(TupleOrder.Ascending);
+      Sort sort_names = null;
+      try {
+	sort_names = new Sort (JJtype,(short)1, JJsize,
+			       (iterator.Iterator) nlj, 1, ascending, JJsize[0], 10);
+      }
+      catch (Exception e) {
+	System.err.println ("*** Error preparing for sorting");
+	System.err.println (""+e);
+	Runtime.getRuntime().exit(1);
+      }
+      
+      
+      System.out.print( "After sorting the output tuples.\n");
+   
+    */  
+      //QueryCheck qcheck6 = new QueryCheck(6);
+      
+      try {
+	while ((t =inl.get_next()) !=null) {
+	  t.print(JJtype);
+	  //qcheck6.Check(t);
+	}
+      }catch (Exception e) {
+	System.err.println ("*** Error preparing for get_next tuple");
+	e.printStackTrace();
+	System.err.println (""+e);
+	Runtime.getRuntime().exit(1);
+      }
+      
+     // qcheck6.report(6);
+      
+      System.out.println ("\n"); 
+      try {
+	inl.close();
+      }
+      catch (Exception e) {
+	status = FAIL;
+	e.printStackTrace();
+      }
+      
+      if (status != OK) {
+	//bail out
+	
+	Runtime.getRuntime().exit(1);
+      }
+  }
+
+	      
+	  
   public void Query1() {
     
     System.out.print("**********************Query1 strating *********************\n");
@@ -625,6 +958,10 @@ class JoinsDriver implements GlobalConst {
     jtype[0] = new AttrType (AttrType.attrString);
     jtype[1] = new AttrType (AttrType.attrString);
  
+    
+    
+    
+    
     TupleOrder ascending = new TupleOrder(TupleOrder.Ascending);
     SortMerge sm = null;
     try {
@@ -1692,7 +2029,8 @@ public class JoinTest
     //SystemDefs global = new SystemDefs("bingjiedb", 100, 70, null);
     //JavabaseDB.openDB("/tmp/nwangdb", 5000);
 
-    JoinsDriver jjoin = new JoinsDriver();
+    String path = "/Users/apurvabharatia/Documents/xml_sample_data.xml";
+    JoinsDriver jjoin = new JoinsDriver(path);
 
     sortstatus = jjoin.runTests();
     if (sortstatus != true) {
