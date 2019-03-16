@@ -102,6 +102,7 @@ public class TupleUtils
 		} catch (FieldNumberOutOfBoundException e){
 			    throw new TupleUtilsException(e, "FieldNumberOutOfBoundException is caught by TupleUtils.java");
 	    }
+	
 	default:
 	  
 	  throw new UnknowAttrType(null, "Don't know how to handle attrSymbol, attrNull");
