@@ -8,13 +8,22 @@ public class NodeTuple extends Tuple {
 	private Intervaltype nodeIntLabel;
 	private int level;
 	private String name;
+	private int nodeType;
 	
-	public String getName() {
+	public int getNodeType() {
+        return nodeType;
+    }
+
+    public void setNodeType(int nodeType) {
+        this.nodeType = nodeType;
+    }
+
+    public String getName() {
 		return name;
 	}
 
 	public void setName(String name) {
-		this.name = name;
+		this.name = name.substring(0, Math.min(name.length(), 5));;
 	}
 
 	public int getLevel() {
