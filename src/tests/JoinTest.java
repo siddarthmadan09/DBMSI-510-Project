@@ -723,8 +723,6 @@ class JoinsDriver implements GlobalConst {
 		      Runtime.getRuntime().exit(1);
 		    }
 
-		    
-
 		    System.out.println ("\n"); 
 		    try {
 		      nlj.close();
@@ -747,7 +745,7 @@ class JoinsDriver implements GlobalConst {
 		  dynamic.put(++dynamicCount, map.get(Integer.valueOf(splited[0])));
 	  }else {
 		  for(Map.Entry<Integer,String> e : dynamic.entrySet()) {
-			  if(e.getValue().equals(map.get(Integer.valueOf(splited[0]))));
+			  if(e.getValue().equals(map.get(Integer.valueOf(splited[0]))))
 			  	index = e.getKey();
 		  }
 	  }	  
@@ -756,7 +754,7 @@ class JoinsDriver implements GlobalConst {
 			  dynamic.put(++dynamicCount, map.get(Integer.valueOf(splited[1])));
 	  }else {
 				  for(Map.Entry<Integer,String> e : dynamic.entrySet()) {
-					  if(e.getValue().equals(map.get(Integer.valueOf(splited[1]))));
+					  if(e.getValue().equals(map.get(Integer.valueOf(splited[1]))))
 					  	index = e.getKey();
 				  }
 			  }	  
