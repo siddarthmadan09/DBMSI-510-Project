@@ -211,11 +211,38 @@ public class Sort extends Iterator implements GlobalConst
       if (cur_node == null) break; 
       p_elems_curr_Q --;
       
+      if (sortFldType.attrType == AttrType.attrInterval) {
+    	  if (lastElem.getIntervalFld(1).getStart() > cur_node.tuple.getIntervalFld(1).getStart()) {
+    		  comp_res = -1;
+    	  } else if(lastElem.getIntervalFld(1).getStart() < cur_node.tuple.getIntervalFld(1).getStart()) {
+    		  comp_res = 1; 
+    	  } else if ((lastElem.getIntervalFld(1).getEnd() > cur_node.tuple.getIntervalFld(1).getEnd())){
+    		  comp_res = -1;
+    	  } else if ((lastElem.getIntervalFld(1).getEnd() < cur_node.tuple.getIntervalFld(1).getEnd())){
+              comp_res = 1;
+          }
+    	  else {
+    	      comp_res = 0;
+    	  }
+    		  
+      } else {
       comp_res = TupleUtils.CompareTupleWithValue(sortFldType, cur_node.tuple, _sort_fld, lastElem);  // need tuple_utils.java
-      
-      if ((comp_res < 0 && order.tupleOrder == TupleOrder.Ascending) || 
-    		  (comp_res > 0 && order.tupleOrder == TupleOrder.Descending)
-    				  || (comp_res==1 && sortFldType.toString()== "attrInterval") ){
+      }
+//      if (sortFldType.attrType == AttrType.attrInterval) {
+//          
+//          try {
+//              if ((comp_res == 1 || comp_res == 0) && cur_node.tuple.getIntervalFld(_sort_fld).getStart() < lastElem.getIntervalFld(_sort_fld).getStart()) {
+//                  comp_res = -1;
+//              }
+//              else {
+//                  comp_res = 1;
+//              }
+//          } catch (FieldNumberOutOfBoundException e) {
+//              // TODO Auto-generated catch block
+//              comp_res = 1;
+//          }
+//      }
+      if ((comp_res < 0 && order.tupleOrder == TupleOrder.Ascending) || (comp_res > 0 && order.tupleOrder == TupleOrder.Descending)) {
 	// doesn't fit in current run, put into the other queue
 	try {
 	  pother_Q.enq(cur_node);
@@ -493,15 +520,12 @@ public class Sort extends Iterator implements GlobalConst
       //      lastElem.setHdr(fld_no, junk, s_size);
       lastElem.setStrFld(_sort_fld, s);
       break;
-      
     case AttrType.attrInterval:
     	lastElem.setIntervalFld(_sort_fld, Intervaltype.min_value());
-        break;
-      
+    	break;
     default:
       // don't know how to handle attrSymbol, attrNull
       //System.err.println("error in sort.java");
-    	System.out.println("Sort fld attr type : "+sortFldType.attrType +" " +lastElem.getStrFld(1));
       throw new UnknowAttrType("Sort.java: don't know how to handle attrSymbol, attrNull");
     }
     
@@ -541,6 +565,8 @@ public class Sort extends Iterator implements GlobalConst
       //      lastElem.setHdr(fld_no, junk, s_size);
       lastElem.setStrFld(_sort_fld, s);
       break;
+    case AttrType.attrInterval:
+    	lastElem.setIntervalFld(_sort_fld, Intervaltype.max_value());
     default:
       // don't know how to handle attrSymbol, attrNull
       //System.err.println("error in sort.java");

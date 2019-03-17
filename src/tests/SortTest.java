@@ -1188,28 +1188,10 @@ public boolean runTests() {
 	              new AttrType(AttrType.attrString),
 	              
 	                };
-	    
-	    FileScan am = null;
-	    try {
-	  am  = new FileScan("xml.in", Stypes, Ssizes, 
-	             (short)3, (short)3,
-	             Sprojection, leftFilter);
-	    }
-	    catch (Exception e) {
-	  status = FAIL;
-	  System.err.println (""+e);
-	  e.printStackTrace();
-	    }
-	    
-	    if (status != OK) {
-	  //bail out
-	  
-	  System.err.println ("*** Error setting up scan for sailors");
-	  Runtime.getRuntime().exit(1);
-	    }
 		
 	    
 	    FileScan fscan = null;
+	    
 	    
 	    try {
 	      fscan = new FileScan("xml.in", Stypes, Ssizes, (short)3, (short)3, Sprojection, null);
@@ -1219,61 +1201,6 @@ public boolean runTests() {
 	      e.printStackTrace();
 	    }
 	    
-	    TupleOrder[] order = new TupleOrder[1];
-	    order[0] = new TupleOrder(TupleOrder.Ascending);
-
-	    // Sort "test1.in" 
-	    Sort sort = null;
-	    try {
-	      sort = new Sort(Stypes, (short) 3, Ssizes, fscan, 2, order[0], REC_LEN1, SORTPGNUM);
-	    }
-	    catch (Exception e) {
-	      status = FAIL;
-	      e.printStackTrace();
-	    }
-	    
-
-	    int count = 0;
-	    t = null;
-	    String outval = null;
-	    
-	    try {
-	      t = sort.get_next();
-	    }
-	    catch (Exception e) {
-	      status = FAIL;
-	      e.printStackTrace(); 
-	    }
-
-	    boolean flag = true;
-	    
-	    while (t != null) {
-	      if (count >= NUM_RECORDS) {
-		System.err.println("Test7 -- OOPS! too many records");
-		status = FAIL;
-		flag = false; 
-		break;
-	      }
-	      
-	      try {
-		outval = t.getStrFld(3);
-	      }
-	      catch (Exception e) {
-		status = FAIL;
-		e.printStackTrace();
-	      }
-	      System.out.println("Outval"+outval);
-
-	      count++;
-
-	      try {
-		t = sort.get_next();
-	      }
-	      catch (Exception e) {
-		status = FAIL;
-		e.printStackTrace();
-	      }
-	    }
 //	    if (count < 40) {
 //	    	System.out.println(count);
 //		System.err.println("Test7 -- OOPS! too few records");
@@ -1283,15 +1210,92 @@ public boolean runTests() {
 //	      System.err.println("Test7 -- Sorting OK");
 //	    }
 
-	    // clean up
-	    try {
-	      sort.close();
-	    }
-	    catch (Exception e) {
-	      status = FAIL;
-	      e.printStackTrace();
-	    }
+	    System.out.println("Sort order");
 	    
+	    TupleOrder[] order = new TupleOrder[1];
+	    order[0] = new TupleOrder(TupleOrder.Ascending);
+
+//	    // Sort "test1.in" 
+//	    Sort sort = null;
+//	    try {
+//	      sort = new Sort(Stypes, (short) 3, Ssizes, fscan, 1, order[0], 8, SORTPGNUM);
+//	    }
+//	    catch (Exception e) {
+//	      status = FAIL;
+//	      e.printStackTrace();
+//	    }
+//	    
+//
+//	    int count = 0;
+//	    t = null;
+//	    String outval = null;
+//	    int start=0,end=0;
+//	    int level=-1;
+//	    
+//	    try {
+//	      t = sort.get_next();
+//	      System.out.println("After extraction"+t.getStrFld(3));
+//	    }
+//	    catch (Exception e) {
+//	      status = FAIL;
+//	      e.printStackTrace(); 
+//	    }
+//
+//	    boolean flag = true;
+//	    
+//	    while (t != null) {
+//	      if (count >= NUM_RECORDS) {
+//		System.err.println("Test7 -- OOPS! too many records");
+//		status = FAIL;
+//		flag = false; 
+//		break;
+//	      }
+//	      
+//	      try {
+//		outval = t.getStrFld(3);
+//		start=t.getIntervalFld(1).getStart();
+//		end=t.getIntervalFld(1).getEnd();
+//		level = t.getIntFld(2);
+//		
+//	      }
+//	      catch (Exception e) {
+//		status = FAIL;
+//		e.printStackTrace();
+//	      }
+//	      System.out.println("Outval: "+outval+ " level: " + level + "  start: " +start +" end : "+end);
+//
+//	      count++;
+//
+//	      try {
+//		t = sort.get_next();
+////		 System.out.println("After extraction"+t.getStrFld(3));
+//
+//	      }
+//	      catch (Exception e) {
+//		status = FAIL;
+//		e.printStackTrace();
+//	      }
+//	    }
+////	    if (count < 40) {
+////	    	System.out.println(count);
+////		System.err.println("Test7 -- OOPS! too few records");
+////		status = FAIL;
+////	    }
+////	    else if (flag && status) {
+////	      System.err.println("Test7 -- Sorting OK");
+////	    }
+//
+//	    // clean up
+//	    try {
+//	      sort.close();
+//	      fscan.close();
+//	      
+//	    }
+//	    catch (Exception e) {
+//	      status = FAIL;
+//	      e.printStackTrace();
+//	    }
+//	    
 	    System.err.println("------------------- TEST 7 completed ---------------------\n");
 	    
 	    return status;
@@ -1311,7 +1315,7 @@ public class SortTest
   {
     boolean sortstatus;
 
-    String path = "/home/siddharth/Courses/CSE510/git-project/DBMSI-510-Project/xml_sample_data.xml";
+    String path = "/home/siddharth/Courses/CSE510/git-project/DBMSI-510-Project/xml_sample_data_big.xml";
     SORTDriver sort = new SORTDriver(path);
 
     sortstatus = sort.runTests();
