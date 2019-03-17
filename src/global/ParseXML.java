@@ -36,8 +36,22 @@ public class ParseXML {
 		n.setNodeIntLabel(interval);
 		n.setLevel(level);
 		n.setName(name);
+		n.setNodeType(0);
 		return n;
 	}
+    public static NodeTuple convertElementToNode(Element element, int level, String name, int nodeT) {
+        NodeTuple n = new NodeTuple();
+        Intervaltype interval = new Intervaltype();
+        interval.setStart(min);
+        interval.setEnd(min);
+        n.setNodeTag(element);
+        n.setNodeIntLabel(interval);
+        n.setLevel(level);
+        n.setName(name);
+        n.setNodeType(nodeT);
+        return n;
+    }
+	
 	
     public static List<NodeTuple> parse(String path) throws Exception {
         int counter = -100000;
@@ -66,35 +80,66 @@ public class ParseXML {
 	    	  interval.setStart(counter++);
 	    	  
 	    	  node.setNodeIntLabel(interval);
+	    	  if (node.getNodeType() == 1) {
+	    	      Intervaltype interval2;
+	    	      NodeTuple node2;
+	    	      node2 = stack.pop();
+	    	      if (node2.getNodeType() == 2) {
+	    	          interval2 = node2.getNodeIntLabel();
+	    	          interval2.setStart(counter++);
+	    	          interval2.setEnd(counter++);
+	    	          node2.setNodeIntLabel(interval2);
+	    	          System.out.println("Found element " + node2.getName() + " "
+	                          +  node2.getNodeIntLabel().getStart() + " " + node2.getLevel() + " " + node2.getNodeIntLabel().getEnd() + " " +  node2.getName());
+
+	    	          nodes.add(node2);
+	    	      } else {
+	    	          stack.push(node2);
+	    	      }
+	    	      interval.setEnd(counter++);
+	    	      node.setNodeIntLabel(interval);
+	    	      nodes.add(node);
+	    	      System.out.println("Found element " + node.getName() + " "
+	                      +  node.getNodeIntLabel().getStart() + " " + node.getLevel() + " " + node.getNodeIntLabel().getEnd() + " " +  node.getName());
+
+	    	      continue;
+	    	      
+	    	  }
 
 	    	  stack.push(node);
 	    	  if( node.getNodeTag() != null) {
 	    		  NodeList entries = node.getNodeTag().getChildNodes();
 	    		  
-	    		  if (node.getNodeTag().getChildNodes().item(0).getNodeType() == Node.TEXT_NODE
-	    				  && node.getNodeTag().getChildNodes().getLength() == 1 ) {
-	    		      stack.push(convertElementToNode(null, level + 1, node.getNodeTag().getTextContent()));  
-	    		  }
+    	    		  if (node.getNodeTag().getChildNodes().item(0).getNodeType() == Node.TEXT_NODE
+    	    				  && node.getNodeTag().getChildNodes().getLength() == 1 ) {
+    	    		      stack.push(convertElementToNode(null, level + 1, node.getNodeTag().getTextContent()));  
+    	    		  }
+    	    		  
+    	    		  if( node.getNodeTag().hasAttributes() ) {
+                          NamedNodeMap namedNodeMap   = node.getNodeTag().getAttributes();
+                        System.out.println("Found element " + namedNodeMap.getLength());
+                            for(int j = 0 ; j < namedNodeMap.getLength() ; j++) {
+    
+                                     Attr attrname = (Attr) namedNodeMap.item(j);
+                                     
+    
+                                    stack.push(convertElementToNode( null, level + 2, attrname.getValue(), 2 ));                   
+                                    stack.push(convertElementToNode(null, level + 1, attrname.getName(), 1));
+
+                            }       
+                        } 
+    		          for (int i = entries.getLength() -1; i >= 0; i--) {
+    		        	  if(entries.item(i).getNodeType() == Node.ELEMENT_NODE) {
+    		                    Element element = (Element) entries.item(i);
+   		    	            
+    		    	            
+                                stack.push(convertElementToNode(element, level + 1, element.getNodeName()));
+
+
+    		    	            
+    		        	  } 
+    		          }
 	    		  
-		          for (int i = entries.getLength() -1; i >= 0; i--) {
-		        	  if(entries.item(i).getNodeType() == Node.ELEMENT_NODE) {
-		                    Element element = (Element) entries.item(i);
-		    	            stack.push(convertElementToNode(element, level + 1, element.getNodeName()));
-		    	            
-		    	            if( entries.item(i).hasAttributes() ) {
-		  	        		  NamedNodeMap namedNodeMap   = entries.item(i).getAttributes();
-		  	        		System.out.println("Found element " + namedNodeMap.getLength());
-			  	        		for(int j = 0 ; j < namedNodeMap.getLength() ; j++) {
-		
-				  	        	         Attr attrname = (Attr) namedNodeMap.item(j);
-				  	        	         
-				  		    	        stack.push(convertElementToNode(null, level + 1, attrname.getName()));
-		
-				  		    	        stack.push(convertElementToNode( null, level + 2, attrname.getValue() ));         			
-			  	        		 }       
-		    	            } 
-		        	  } 
-		          }
 	         }
 	    		  
 	          
