@@ -149,19 +149,22 @@ public class PredEval
 		{
 		case AttrOperator.aopEQ:
 		  if( temp_ptr.flag > 0 && comp_res == 3) op_res = true; // xml change
-		  if (comp_res == 0) op_res = true;
+		  
+		  if (temp_ptr.flag <= 0 && comp_res == 0) op_res = true;
 		  break;
 		case AttrOperator.aopLT:
+			System.out.println(comp_res);
+		  if( temp_ptr.flag > 0 && comp_res == 4) op_res = true;
 		  if( temp_ptr.flag > 0 && comp_res == 2) op_res = true;
-		  if (comp_res <  0) op_res = true;
-		  break;
+		  if (temp_ptr.flag <= 0 && comp_res <  0) op_res = true;
+		  break; 
 		case AttrOperator.aopGT:
 		  if( temp_ptr.flag > 0 && comp_res == 1) op_res = true;
-		  if (comp_res >  0) op_res = true;
+		  if (temp_ptr.flag <= 0 && comp_res >  0) op_res = true;
 		  break;
 		case AttrOperator.aopNE:
 		  if( temp_ptr.flag > 0 && comp_res == 0) op_res = true;
-		  if (comp_res != 0) op_res = true;
+		  if (temp_ptr.flag <= 0 && comp_res != 0) op_res = true;
 		  break;
 		case AttrOperator.aopLE:
 		  if (comp_res <= 0) op_res = true;

@@ -53,6 +53,7 @@ public class TupleUtils
 	  }catch (FieldNumberOutOfBoundException e){
 	    throw new TupleUtilsException(e, "FieldNumberOutOfBoundException is caught by TupleUtils.java");
 	  }
+	  if (t1_i <  t2_i && t1_i + 1 == t2_i) return 4;
 	  if (t1_i == t2_i) return  0;
 	  if (t1_i <  t2_i) return -1;
 	  if (t1_i >  t2_i) return  1;

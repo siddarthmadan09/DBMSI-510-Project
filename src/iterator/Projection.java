@@ -75,7 +75,7 @@ public class Projection
 		  Jtuple.setStrFld(i+1, t2.getStrFld(perm_mat[i].offset));
 		  break;
 		case AttrType.attrInterval: /// XML CHanges
-			Jtuple.setIntervalFld(i+1,t1.getIntervalFld(perm_mat[i].offset));
+			Jtuple.setIntervalFld(i+1,t2.getIntervalFld(perm_mat[i].offset));
 			break;
 		default:
 		  

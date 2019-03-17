@@ -37,6 +37,9 @@ public class NestedLoopsJoins  extends Iterator
   private   Heapfile  hf;
   private   Scan      inner;
   
+  public int getFinalTupleSize() {
+	  return perm_mat.length;
+  }
   
   /**constructor
    *Initialize the two relations which are joined, including relation type,
