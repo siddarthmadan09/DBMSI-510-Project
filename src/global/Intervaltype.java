@@ -1,6 +1,8 @@
 package global;
 
 public class Intervaltype {
+
+
 	int start;
 	int end;
 	
@@ -44,5 +46,10 @@ public class Intervaltype {
 		type.setStart(START_MAX_VALUE);
 		type.setEnd(END_MAX_VALUE);
 		return type;
+	}
+	
+	@Override
+	public String toString() {
+		return "Intervaltype [start=" + start + ", end=" + end + "]";
 	}
 }
