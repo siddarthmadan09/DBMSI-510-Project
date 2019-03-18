@@ -55,8 +55,8 @@ public class ParseXML {
 	
 	
     public static List<NodeTuple> parse(String path) throws Exception {
-    	FileWriter fileWriter = new FileWriter("/Users/sidmadan/Documents/cse510/samplefile2.txt");
-    	   PrintWriter printWriter = new PrintWriter(fileWriter);
+    //	FileWriter fileWriter = new FileWriter("/Users/sidmadan/Documents/cse510/samplefile2.txt");
+    	//   PrintWriter printWriter = new PrintWriter(fileWriter);
         int counter = Intervaltype.START_MIN_VALUE;
         int level;
         Stack<NodeTuple> stack = new Stack<>();
@@ -152,9 +152,9 @@ public class ParseXML {
     		  interval.setEnd(counter++);
     		  node.setNodeIntLabel(interval);
     		 
-    		  printWriter.println("Found element " + node.getName() + " "
-   					  +  node.getNodeIntLabel().getStart() + " " + node.getLevel() + " " 
-    				  + node.getNodeIntLabel().getEnd() + " " +  node.getName());
+  //  		  printWriter.println("Found element " + node.getName() + " "
+   //					  +  node.getNodeIntLabel().getStart() + " " + node.getLevel() + " " 
+    //				  + node.getNodeIntLabel().getEnd() + " " +  node.getName());
     		  
     		
    			  nodes.add(node);
@@ -166,8 +166,8 @@ public class ParseXML {
     		  
     	  }
         }
-        fileWriter.close();
-        printWriter.close();
+//        fileWriter.close();
+  //      printWriter.close();
         return nodes;
 //            NodeList children = element.getChildNodes();
             

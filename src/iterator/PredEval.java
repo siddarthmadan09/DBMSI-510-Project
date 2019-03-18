@@ -153,7 +153,6 @@ public class PredEval
 		  if (temp_ptr.flag <= 0 && comp_res == 0) op_res = true;
 		  break;
 		case AttrOperator.aopLT:
-			System.out.println(comp_res);
 		  if( temp_ptr.flag > 0 && comp_res == 4) op_res = true;
 		  if( temp_ptr.flag > 0 && comp_res == 2) op_res = true;
 		  if (temp_ptr.flag <= 0 && comp_res <  0) op_res = true;
