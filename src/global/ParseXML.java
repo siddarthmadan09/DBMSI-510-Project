@@ -3,6 +3,8 @@ package global;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
@@ -24,9 +26,8 @@ import heap.Tuple;
 
 
 public class ParseXML {
-	public static String path = "/Users/sidmadan/Documents/cse510/xml_sample_data.xml";	
+	public static String path = "/Users/sidmadan/Documents/cse510/xml_sample_data1.xml";	
 	public static final int min = Integer.MIN_VALUE;
-	
 	public static NodeTuple convertElementToNode(Element element, int level, String name) {
 		NodeTuple n = new NodeTuple();
 		Intervaltype interval = new Intervaltype();
@@ -54,7 +55,9 @@ public class ParseXML {
 	
 	
     public static List<NodeTuple> parse(String path) throws Exception {
-        int counter = -100000;
+    	FileWriter fileWriter = new FileWriter("/Users/sidmadan/Documents/cse510/samplefile2.txt");
+    	   PrintWriter printWriter = new PrintWriter(fileWriter);
+        int counter = Intervaltype.START_MIN_VALUE;
         int level;
         Stack<NodeTuple> stack = new Stack<>();
         List<NodeTuple> nodes = new ArrayList<NodeTuple>();
@@ -89,8 +92,8 @@ public class ParseXML {
 	    	          interval2.setStart(counter++);
 	    	          interval2.setEnd(counter++);
 	    	          node2.setNodeIntLabel(interval2);
-	    	          System.out.println("Found element " + node2.getName() + " "
-	                          +  node2.getNodeIntLabel().getStart() + " " + node2.getLevel() + " " + node2.getNodeIntLabel().getEnd() + " " +  node2.getName());
+//	    	          System.out.println("Found element " + node2.getName() + " "
+//	                          +  node2.getNodeIntLabel().getStart() + " " + node2.getLevel() + " " + node2.getNodeIntLabel().getEnd() + " " +  node2.getName());
 
 	    	          nodes.add(node2);
 	    	      } else {
@@ -99,8 +102,8 @@ public class ParseXML {
 	    	      interval.setEnd(counter++);
 	    	      node.setNodeIntLabel(interval);
 	    	      nodes.add(node);
-	    	      System.out.println("Found element " + node.getName() + " "
-	                      +  node.getNodeIntLabel().getStart() + " " + node.getLevel() + " " + node.getNodeIntLabel().getEnd() + " " +  node.getName());
+//	    	      System.out.println("Found element " + node.getName() + " "
+//	                      +  node.getNodeIntLabel().getStart() + " " + node.getLevel() + " " + node.getNodeIntLabel().getEnd() + " " +  node.getName());
 
 	    	      continue;
 	    	      
@@ -109,15 +112,15 @@ public class ParseXML {
 	    	  stack.push(node);
 	    	  if( node.getNodeTag() != null) {
 	    		  NodeList entries = node.getNodeTag().getChildNodes();
-	    		  
+	    		  if(entries.item(0) != null) {
     	    		  if (node.getNodeTag().getChildNodes().item(0).getNodeType() == Node.TEXT_NODE
     	    				  && node.getNodeTag().getChildNodes().getLength() == 1 ) {
     	    		      stack.push(convertElementToNode(null, level + 1, node.getNodeTag().getTextContent()));  
     	    		  }
+	    		  }
     	    		  
     	    		  if( node.getNodeTag().hasAttributes() ) {
                           NamedNodeMap namedNodeMap   = node.getNodeTag().getAttributes();
-                        System.out.println("Found element " + namedNodeMap.getLength());
                             for(int j = 0 ; j < namedNodeMap.getLength() ; j++) {
     
                                      Attr attrname = (Attr) namedNodeMap.item(j);
@@ -148,8 +151,12 @@ public class ParseXML {
     		  interval = node.getNodeIntLabel();
     		  interval.setEnd(counter++);
     		  node.setNodeIntLabel(interval);
-   			  System.out.println("Found element " + node.getName() + " "
-   					  +  node.getNodeIntLabel().getStart() + " " + node.getLevel() + " " + node.getNodeIntLabel().getEnd() + " " +  node.getName());
+    		 
+    		  printWriter.println("Found element " + node.getName() + " "
+   					  +  node.getNodeIntLabel().getStart() + " " + node.getLevel() + " " 
+    				  + node.getNodeIntLabel().getEnd() + " " +  node.getName());
+    		  
+    		
    			  nodes.add(node);
 
     			  
@@ -159,6 +166,8 @@ public class ParseXML {
     		  
     	  }
         }
+        fileWriter.close();
+        printWriter.close();
         return nodes;
 //            NodeList children = element.getChildNodes();
             

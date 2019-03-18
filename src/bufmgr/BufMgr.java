@@ -331,6 +331,16 @@ public class BufMgr implements GlobalConst{
   /** The replacer object, which is only used in this class. */
   private Replacer replacer;
   
+  /** counter for counting number of pages read/written from/to disk */
+  public int pcounter;
+  
+  
+  /** Increments the pin count of a certain frame page when the
+   * page is pinned.
+   *
+   * @return the incremented page count.
+   */
+  public void increment() { ++pcounter; }
   
   /** Factor out the common code for the two versions of Flush 
    *
@@ -817,6 +827,7 @@ public class BufMgr implements GlobalConst{
     
     try {
       SystemDefs.JavabaseDB.write_page(pageno, page);
+      increment();
     }
     catch (Exception e) {
       throw new BufMgrException(e,"BufMgr.java: write_page() failed");
@@ -829,6 +840,7 @@ public class BufMgr implements GlobalConst{
     
     try {
       SystemDefs.JavabaseDB.read_page(pageno, page);
+      increment();
     }
     catch (Exception e) {
       throw new BufMgrException(e,"BufMgr.java: read_page() failed");
