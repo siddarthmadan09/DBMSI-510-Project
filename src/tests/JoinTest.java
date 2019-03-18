@@ -496,6 +496,8 @@ class JoinsDriver implements GlobalConst {
     
     return true;
   }
+  
+  
   private void QueryXML_CondExpr(CondExpr[] expr) {
 
 	    expr[0].next  = null;
@@ -662,29 +664,100 @@ class JoinsDriver implements GlobalConst {
 			  BufferedReader br = new BufferedReader(new FileReader(file)); 
 			  st = br.readLine();
 			  int nodesCount = Integer.valueOf(st);
-			  System.out.println("no of nodes:" + nodesCount);
 			  
 			  HashMap<Integer,String > map= new HashMap<Integer,String>();
 			  
 			  for(int i=0;i<nodesCount;i++) {
 				  st = br.readLine();
 				  map.put(i+1, st);
-				  System.out.println("printing map:" + i+1 + st);
 			  }
 			  
 			  NestedLoopsJoins inl = null;
 			  List<String> conditions= new ArrayList<String>();
 			  while ((st = br.readLine()) != null) {
 				  conditions.add(st);
-				  System.out.println(st);
 			  }
-			  
 			  int dynamicCount=-1;
 			  HashMap<Integer,String> dynamic= new HashMap<Integer,String>();
+			   
+			  
+			  
+			  /* Query plan with left-deep tree traversal: This query will be 
+			   * fast for data having large number of duplicate leaf values
+			   */	  
+			  //Query 1 executing..
+			  System.out.println("Query plan 1 executing....");
+			  
 			  System.out.println(SystemDefs.JavabaseBM.pcounter);		    
-			  recursive(map, conditions, inl,0,"xml.in",dynamicCount,dynamic);
-			  System.out.println(SystemDefs.JavabaseBM.pcounter);
-		  }catch( Exception e) {
+			//  recursive(map, conditions, inl,0,"xml.in",dynamicCount,dynamic);
+			  System.out.println("for left:"+SystemDefs.JavabaseBM.pcounter);		    
+			
+			  
+			  /* Query plan with right-deep tree traversal: This query will be 
+			   * fast for data having large number of duplicate leaf values.Also
+			   * it depends on the data whether the data distribution is left-skewed or right skewed.
+			   */	    
+			  //Query plan 2 executing...
+			  System.out.println("Query plan 2 executing....");
+				 			  
+			  List<String> conditionsReverse= new ArrayList<String>();
+				 
+			  for(int i=conditions.size()-1;i>=0;i--) {
+				  conditionsReverse.add(conditions.get(i));
+				  }
+			 
+			  recursive(map, conditionsReverse, inl,0,"xml.in",dynamicCount,dynamic);			  
+			  System.out.println("for right:"+SystemDefs.JavabaseBM.pcounter);	 
+			
+			  
+			  /* Query plan with right-deep tree traversal: This query will be 
+			   * fast for data having large number of duplicate leaf values.Also
+			   * it depends on the data whether the data distribution is left-skewed or right skewed.
+			   */	    
+			  //query plan 3
+			  System.out.println("Query plan 3 executing....");				
+			  
+			  String[][] conditionMatrix= new String[conditions.size()*2][conditions.size()*2];
+			  for(int z=0;z<conditions.size();z++) {
+				  String[] splited=conditions.get(z).split("\\s+");
+				  int node1=Integer.valueOf(splited[0]);
+				  int node2=Integer.valueOf(splited[1]);
+				  conditionMatrix[node1-1][node2-1] = splited[2];
+			  }
+			  
+			  List<String> conditionsBush= new ArrayList<String>();
+			  int root = Integer.valueOf(conditions.get(0).split("\\s+")[0]);
+			 int counter = 0;
+			 Queue<Integer> condQ = new LinkedList<Integer>();
+			 condQ.offer(root-1);
+			 HashMap<Integer, Boolean> visited = new HashMap<Integer, Boolean>();
+			 while (!condQ.isEmpty()) {
+				 int pop = condQ.poll();
+				 if (visited.containsKey(pop)) {
+					 continue;
+				 }
+					 
+				 visited.put(pop, true);
+				 for (int k = 0; k < conditions.size()*2; k++) {
+					 if (conditionMatrix[pop][k] != null) {
+						 String ipCondition = Integer.toString(pop+1) + " " + Integer.toString(k+1) + " "
+							+ conditionMatrix[pop][k];
+						 conditionsBush.add(ipCondition);
+						 condQ.offer(k);
+					 }
+				 }
+				 
+			 }
+			 	
+			 for(int i=0;i<conditionsReverse.size();i++) {
+				  System.out.println("bush:"+conditionsBush.get(i));
+			  }
+			  		
+			//  recursive(map, conditionsBush, inl,0,"xml.in",dynamicCount,dynamic);
+			  System.out.println("For bush:"+SystemDefs.JavabaseBM.pcounter);		    
+			 
+			  
+		     }catch( Exception e) {
 			  e.printStackTrace();
 		  }
   }
@@ -693,9 +766,7 @@ class JoinsDriver implements GlobalConst {
   
   public void  recursive(HashMap<Integer,String > map, List<String> conditions,Iterator it ,int conditionCount, String heapFileName,int dynamicCount,HashMap<Integer,String> dynamic ) {
 	  
-	  System.out.println("conditioncount:"+conditionCount );
-	  System.out.println("conditionsize:"+conditions.size() );
-		
+	 	
 	  if(conditionCount >= conditions.size()) {
 		  NestedLoopsJoins nlj = (NestedLoopsJoins)it;
 		  int sizeofTuple = nlj.getFinalTupleSize();
@@ -759,7 +830,6 @@ class JoinsDriver implements GlobalConst {
 				  }
 			  }	  
 				
-		System.out.println("index:"+index);
 	  //parsing for condition expressions
 	  CondExpr [] leftFilter  = new CondExpr[2];
       leftFilter[0] = new CondExpr();
@@ -912,7 +982,6 @@ class JoinsDriver implements GlobalConst {
 			Runtime.getRuntime().exit(1);
 		      }
 		
-		      System.out.println("index: call"+dynamicCount);
 		      recursive(map, conditions, inl, conditionCount+1, heapFileName, dynamicCount, dynamic);
     	 	  
   }
@@ -928,19 +997,7 @@ class JoinsDriver implements GlobalConst {
 	  
 	  File file = new File("/Users/sidmadan/Documents/cse510/input.txt"); 
 	  
-	  
-	  String st; 
-	  try {
-		  BufferedReader br = new BufferedReader(new FileReader(file)); 
-			 
-		  while ((st = br.readLine()) != null) {
-			  System.out.println(st); 
-		  }
-	} catch (IOException e1) {
-		// TODO Auto-generated catch block
-		e1.printStackTrace();
-	} 
-	  
+	    
 	  
       boolean status = OK;
       
@@ -2325,6 +2382,8 @@ public class JoinTest
     //JavabaseDB.openDB("/tmp/nwangdb", 5000);
 
     String path = "/Users/sidmadan/Documents/cse510/xml_sample_data1.xml";
+    //String path = "/Users/sidmadan/Documents/cse510/xml_sample_data1.xml";
+
     JoinsDriver jjoin = new JoinsDriver(path);
 
     sortstatus = jjoin.runTests();
