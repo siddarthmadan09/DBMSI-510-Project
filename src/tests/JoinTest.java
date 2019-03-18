@@ -681,9 +681,9 @@ class JoinsDriver implements GlobalConst {
 			  
 			  int dynamicCount=-1;
 			  HashMap<Integer,String> dynamic= new HashMap<Integer,String>();
-			  		    
+			  System.out.println(SystemDefs.JavabaseBM.pcounter);		    
 			  recursive(map, conditions, inl,0,"xml.in",dynamicCount,dynamic);
-			  
+			  System.out.println(SystemDefs.JavabaseBM.pcounter);
 		  }catch( Exception e) {
 			  e.printStackTrace();
 		  }
@@ -2324,7 +2324,7 @@ public class JoinTest
     //SystemDefs global = new SystemDefs("bingjiedb", 100, 70, null);
     //JavabaseDB.openDB("/tmp/nwangdb", 5000);
 
-    String path = "/Users/sidmadan/Documents/cse510/xml_sample_data.xml";
+    String path = "/Users/sidmadan/Documents/cse510/xml_sample_data1.xml";
     JoinsDriver jjoin = new JoinsDriver(path);
 
     sortstatus = jjoin.runTests();
