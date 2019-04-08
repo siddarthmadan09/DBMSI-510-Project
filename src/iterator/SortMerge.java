@@ -129,6 +129,7 @@ public class SortMerge extends Iterator implements GlobalConst
         
       p_i1 = am1;
       p_i2 = am2;
+ 
       
       if    (!in1_sorted){
 	try {
@@ -136,9 +137,9 @@ public class SortMerge extends Iterator implements GlobalConst
 			  order, sortFld1Len, amt_of_mem / 2);
 	  Iterator temp_p1=p_i1;
 	  Tuple p1Temp = null;
-//	 
-	  /*
-  while((p1Temp = temp_p1.get_next() )!= null) {
+//	  
+	  
+ /* while((p1Temp = temp_p1.get_next() )!= null) {
 		  System.out.println("Tuple "+p1Temp.getStrFld(3)+" "+p1Temp.getIntervalFld(1).getStart()+" "+p1Temp.getIntervalFld(1).getEnd()+" "+p1Temp.getLength());
 	  }*/
 	}catch(Exception e){
@@ -152,6 +153,7 @@ public class SortMerge extends Iterator implements GlobalConst
 			   order, sortFld2Len, amt_of_mem / 2);
 	  Tuple p2Temp = null;
 	  Iterator temp_p2=p_i2;
+	  Iterator temp_p2_copy = p_i2;
 //      Tuple p2Temp = null;
 //	  
 /*
@@ -270,23 +272,25 @@ public class SortMerge extends Iterator implements GlobalConst
     {
       
       int    comp_res;
-      Tuple _tuple1,_tuple2;
+      Tuple _tuple1 = null,_tuple2, tuple2_copy = null;
+      
       if (done) return null;
       
       while (true)
 	{
     	  //System.out.println("while true " +process_next_block);
-	  if (process_next_block)
+	 if (process_next_block )
 	    {
 	      process_next_block = false;
+	     
 	      if (get_from_in1)
+	    	  
+	    
 		if ((tuple1 = p_i1.get_next()) == null)
 		  {
-			//System.out.println(tuple1.getStrFld(3)+"  "+tuple1.getIntervalFld(1).getStart());
 		    done = true;
 		    return null;
 		  }
-	      //System.out.println(tuple1.getStrFld(3)+"  "+tuple1.getIntervalFld(1).getStart());
 	      if (get_from_in2)
 		if ((tuple2 = p_i2.get_next()) == null)
 		  {
@@ -303,24 +307,24 @@ public class SortMerge extends Iterator implements GlobalConst
 	      comp_res = wrapperCompare(sortFldType, tuple1,
 				  jc_in1, tuple2, jc_in2);
 	      //System.out.println("Comparison "+comp_res);
-	      while ((comp_res >=0 && _order.tupleOrder == TupleOrder.Ascending) ||
+	      while ((comp_res<0  && _order.tupleOrder == TupleOrder.Ascending) ||
 		     (comp_res > 0 && _order.tupleOrder == TupleOrder.Descending))
 		{
-	    	  //System.out.println("Comparison inside while "+comp_res);
 		  if ((tuple1 = p_i1.get_next()) == null) {
 		    done = true;
 		    return null;
 		  }
-		  System.out.println(tuple1.getStrFld(3)+"  "+tuple1.getIntervalFld(1).getStart());
+		 // System.out.println(tuple1.getStrFld(3)+"  "+tuple1.getIntervalFld(1).getStart());
 		  
 		  comp_res = wrapperCompare(sortFldType, tuple1,
-				  jc_in1, tuple2, jc_in2);
-		}
+				  jc_in1, tuple2, jc_in2);	
+		  }
+	      
 	      
 	      comp_res = wrapperCompare(sortFldType, tuple1,
 				  jc_in1, tuple2, jc_in2);
 	      //System.out.println("Comparison "+comp_res);
-	      while ((comp_res >= 0 && _order.tupleOrder == TupleOrder.Ascending) ||
+	      while (( (comp_res >0 ) && _order.tupleOrder == TupleOrder.Ascending) ||
 		     (comp_res < 0 && _order.tupleOrder == TupleOrder.Descending))
 		{
 		  if ((tuple2 = p_i2.get_next()) == null)
@@ -334,7 +338,7 @@ public class SortMerge extends Iterator implements GlobalConst
 							      
 		}
 	      
-	      if ( comp_res != -1)
+	      if ( comp_res !=0)
 		{
 		  process_next_block = true;
 		  continue;
@@ -343,20 +347,23 @@ public class SortMerge extends Iterator implements GlobalConst
 	      TempTuple1.tupleCopy(tuple1);
 	      TempTuple2.tupleCopy(tuple2); 
 	      
-	      io_buf1.init(_bufs1,       0, t1_size, temp_file_fd1);
-	      io_buf2.init(_bufs2,       0, t2_size, temp_file_fd2);
-	      
+	      io_buf1.init(_bufs1,       1, t1_size, temp_file_fd1);
+	      io_buf2.init(_bufs2,       1, t2_size, temp_file_fd2);
+	      //io_buf1.Put(_tuple1);
 //	      while (wrapperCompare(sortFldType, tuple1,
 //			      jc_in1, TempTuple1, jc_in1)== 0)
-	      while( checkEquality(tuple1, TempTuple1) )
+	      while(checkEquality(tuple1, TempTuple1))
 		{
 		  // Insert tuple1 into io_buf1
 		  try {
+			//  System.out.println("Putting in buffer" +tuple1.getStrFld(3));
 		    io_buf1.Put(tuple1);
+		    //System.out.println("putting in iobuf1");
 		  }
 		  catch (Exception e){
 		    throw new JoinsException(e,"IoBuf error in sortmerge");
 		  }
+		  
 		  if ((tuple1=p_i1.get_next()) == null)
 		    {
 		      get_from_in1       = true;
@@ -366,12 +373,16 @@ public class SortMerge extends Iterator implements GlobalConst
 	      
 //	      while (wrapperCompare(sortFldType, tuple2,
 //			      jc_in2, TempTuple2, jc_in2) == 0 )
-	    	  while( checkEquality(tuple2, TempTuple2) )
+	    	  while( tuple2.getIntervalFld(jc_in2).getStart()> TempTuple1.getIntervalFld(jc_in1).getStart() &&
+	    			  tuple2.getIntervalFld(jc_in2).getEnd()< TempTuple1.getIntervalFld(jc_in1).getEnd()  )
 		{
 		  // Insert tuple2 into io_buf2
 		  
 		  try {
+			 // System.out.println("Putting in buffer 2: "+tuple2.getStrFld(3));
 		    io_buf2.Put(tuple2);
+		    //System.out.println("putting in iobuf2");
+		    
 		  }
 		  catch (Exception e){
 		    throw new JoinsException(e,"IoBuf error in sortmerge");
@@ -390,23 +401,31 @@ public class SortMerge extends Iterator implements GlobalConst
 	      // Another optimization that can be made is to choose the inner and outer
 	      // by checking the number of tuples in each equivalence class.
 	      
-	      if ((_tuple1=io_buf1.Get(TempTuple1)) == null)                // Should not occur
-		System.out.println( "Equiv. class 1 in sort-merge has no tuples");
+	      //if ((_tuple1=io_buf1.Get(TempTuple1)) == null)                // Should not occur
+		//System.out.println( "Equiv. class 1 in sort-merge has no tuples");
 	    }
-	  
+	  //System.out.println("From io 1 "+ _tuple1.getStrFld(3));
+	 
 	  if ((_tuple2 = io_buf2.Get(TempTuple2)) == null)
 	    {
+		//  System.out.println("From io 2 "+ _tuple2.getStrFld(3));
 	      if (( _tuple1= io_buf1.Get(TempTuple1)) == null)
 		{
+	    	  
 		  process_next_block = true;
-		  continue;                                // Process next equivalence class
+		  continue; 
+	    	  // Process next equivalence class
 		}
 	      else
 		{
 		  io_buf2.reread();
+		 // io_buf1.reread();
+		 // System.out.println("Invoked re read");
 		  _tuple2= io_buf2.Get( TempTuple2);
+		 // _tuple1=io_buf1.Get(TempTuple1);
 		}
 	    }
+	 
 	  if (PredEval.Eval(OutputFilter, TempTuple1, TempTuple2, _in1, _in2) == true)
 	    {
 	      Projection.Join(TempTuple1, _in1, 
@@ -477,29 +496,30 @@ public class SortMerge extends Iterator implements GlobalConst
 	}
   if (sortFldType.attrType==5)
   {
-	  if (comp_res==1)
+	  if (comp_res == 1)
 	  {
-		  comp_res=-1;
-	  }else if(comp_res==2)
+		  comp_res = 0;
+	  }else 
 	  {
-		  comp_res=1;
-		  
+		  try {
+			if( tuple1.getIntervalFld(jc_in1).getStart() < tuple2.getIntervalFld(jc_in2).getStart())
+			  {
+				  comp_res = -1;
+			  }
+			  else if ( tuple1.getIntervalFld(jc_in1).getStart() > tuple2.getIntervalFld(jc_in2).getStart())
+			  {
+				  comp_res = 1;
+			  }
+					} catch (FieldNumberOutOfBoundException | IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		  		  
 	  }
-	  else 
-	  {
+	  //else 
+	 // {
 		 /* try {
-			if( tuple1.getIntervalFld(1).getStart()<tuple2.getIntervalFld(1).getStart())
-			  {
-				  comp_res=-1;
-			  }
-			  else if ( tuple1.getIntervalFld(1).getStart() > tuple2.getIntervalFld(1).getStart())
-			  {
-				  comp_res=1;
-			  }
-			  else
-			  {
-				  comp_res=0;
-			  }
+			
 		} catch (FieldNumberOutOfBoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -509,23 +529,34 @@ public class SortMerge extends Iterator implements GlobalConst
 		}
 		  
 	  }*/
-		 comp_res = 0;
+		// comp_res = 0;
 	  
-  }
+ // }
 	  
 	  
   }
 	  return comp_res;
   }
   
+  /*
+   * New changes for dynamic query xml change
+   * */
+  public int getFinalTupleSize() {
+	  return perm_mat.length;
+  }
+  
   
   public boolean checkEquality(Tuple t1, Tuple t2){
-	  
+	 
 	 try {
-		if ( t1.getIntervalFld(1).getStart() == t2.getIntervalFld(1).getStart() && 
-				  t1.getIntervalFld(1).getEnd() == t2.getIntervalFld(1).getEnd() ) {
+		if ( t1.getIntervalFld(jc_in1).getStart() == t2.getIntervalFld(jc_in2).getStart() && 
+				  t1.getIntervalFld(jc_in1).getEnd() == t2.getIntervalFld(jc_in2).getEnd() ) {
+			
 			 return true;
-		 }
+			
+			}
+		
+		 
 	} catch (FieldNumberOutOfBoundException e) {
 		// TODO Auto-generated catch block
 		e.printStackTrace();
