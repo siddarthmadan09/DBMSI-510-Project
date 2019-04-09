@@ -334,8 +334,20 @@ public class BufMgr implements GlobalConst{
   /** counter for counting number of pages read/written from/to disk */
   public int pcounter;
   
+  /** String value of Page Replacement Policy */
+  private String ReplacerStr;
   
-  /** Increments the pin count of a certain frame page when the
+  
+  
+  public String getReplacerStr() {
+    return ReplacerStr;
+}
+
+public void setReplacerStr(String replacerStr) {
+    ReplacerStr = replacerStr;
+}
+
+/** Increments the pin count of a certain frame page when the
    * page is pinned.
    *
    * @return the incremented page count.
@@ -425,6 +437,7 @@ public class BufMgr implements GlobalConst{
       frmeTable = new FrameDesc[numBuffers];
       bufPool = new byte[numBuffers][MAX_SPACE];
       frmeTable = new FrameDesc[numBuffers];
+      ReplacerStr = replacerArg;
       
       for (int i=0; i<numBuffers; i++)  // initialize frameTable
 	frmeTable[i] = new FrameDesc();

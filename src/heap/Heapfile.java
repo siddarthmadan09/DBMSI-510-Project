@@ -1,6 +1,8 @@
 package heap;
 
 import java.io.*;
+import java.util.List;
+
 import diskmgr.*;
 import bufmgr.*;
 import global.*;
@@ -598,6 +600,88 @@ public class Heapfile implements Filetype,  GlobalConst {
       
       return rid;
       
+    }
+  
+  
+  /*
+   * Gets parsed XML nodes as input and adds each node into database serailly
+   */
+  public boolean insertRecordfromXML(List<NodeTuple> inputNodes) 
+          throws InvalidSlotNumberException,  
+             InvalidTupleSizeException,
+             SpaceNotAvailableException,
+             HFException,
+             HFBufMgrException,
+             HFDiskMgrException,
+             IOException
+          {
+      boolean OK = true;
+      boolean FAIL = false;
+   // creating the XML Interval relation
+      AttrType [] Stypes = new AttrType[3];
+      Stypes[0] = new AttrType (AttrType.attrInterval);
+      Stypes[1] = new AttrType (AttrType.attrInteger);
+      Stypes[2] = new AttrType (AttrType.attrString);
+
+      //SOS // Max Size of String is 5 chars
+      short [] Ssizes = new short [1];
+      Ssizes[0] = 10; //first elt. is 30
+      
+      Tuple t = new Tuple();
+      boolean status = true;
+      try {
+        t.setHdr((short) 3,Stypes, Ssizes);
+      }
+      catch (Exception e) {
+        System.err.println("*** error in Tuple.setHdr() ***");
+        status = FAIL;
+        e.printStackTrace();
+      }
+      
+      int size = t.size();
+      
+      // inserting the tuple into file "sailors"
+      RID             rid;
+      
+      t = new Tuple(size);
+      try {
+        t.setHdr((short) 3, Stypes, Ssizes);
+      }
+      catch (Exception e) {
+        System.err.println("*** error in Tuple.setHdr() ***");
+        status = FAIL;
+        e.printStackTrace();
+      }
+      
+      for (NodeTuple node : inputNodes) {
+          try {
+        t.setIntervalFld(1, node.getNodeIntLabel());
+        t.setIntFld(2, node.getLevel());
+        t.setStrFld(3, node.getName());
+        
+          }
+          catch (Exception e) {
+        System.err.println("*** Heapfile error in Tuple.setStrFld() ***");
+        status = FAIL;
+        e.printStackTrace();
+          }
+          
+          try {
+        rid = insertRecord(t.returnTupleByteArray());
+          }
+          catch (Exception e) {
+        System.err.println("*** error in Heapfile.insertRecord() ***");
+        status = FAIL;
+        e.printStackTrace();
+          }      
+        }
+        if (status != OK) {
+          //bail out
+          System.err.println ("*** Error creating relation for sailors");
+          Runtime.getRuntime().exit(1);
+        }
+        
+        return true;
     }
   
   /** Delete record from file with given rid.
