@@ -2,9 +2,20 @@ package global;
 
 public class Intervaltype {
 
+	
+	public Intervaltype() {
+		super();
+	}
 
-	int start;
-	int end;
+	public Intervaltype(Intervaltype interval) {
+		super();
+		this.start = interval.start;
+		this.end = interval.end;
+		
+	}
+
+	private int start;
+	private int end;
 	
 	public static int START_MIN_VALUE = -300000;
 	public static int END_MIN_VALUE = -300000;
@@ -40,7 +51,8 @@ public class Intervaltype {
 		type.setEnd(END_MIN_VALUE);
 		return type;
 	}
-	
+
+
 	public static Intervaltype max_value() {
 		Intervaltype type = new Intervaltype();
 		type.setStart(START_MAX_VALUE);
