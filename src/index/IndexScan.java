@@ -4,7 +4,11 @@ import bufmgr.*;
 import diskmgr.*; 
 import btree.*;
 import iterator.*;
-import heap.*; 
+import heap.*;
+import intervaltree.IntervalTFileScan;
+import intervaltree.IntervalTreeFile;
+import intervaltree.TreeData;
+
 import java.io.*;
 
 
@@ -115,6 +119,22 @@ public class IndexScan extends Iterator {
       }
       
       break;
+    case IndexType.Interval_Index:
+        try {
+        	indFile = new IntervalTreeFile(indName); 
+              }
+              catch (Exception e) {
+        	throw new IndexException(e, "IndexScan.java: IntervalTreeFile exceptions caught from IntervalTreeFile constructor");
+              }
+              
+              try {
+        	indScan = (IntervalTFileScan) IndexUtils.IntervalTree_scan(selects, indFile);
+              }
+              catch (Exception e) {
+        	throw new IndexException(e, "IndexScan.java: IntervalTreeFile exceptions caught from IndexUtils.BTree_scan().");
+              }
+              break;
+    	
     case IndexType.None:
     default:
       throw new UnknownIndexTypeException("Only BTree index is supported so far");
@@ -203,9 +223,11 @@ public class IndexScan extends Iterator {
 	}
 	return Jtuple;
       }
-      
-      // not index_only, need to return the whole tuple
-      rid = ((LeafData)nextentry.data).getData();
+   // not index_only, need to return the whole tuple
+      if(nextentry.data instanceof TreeData)
+    	  rid = ((TreeData)nextentry.data).getData();
+      else
+    	  rid = ((LeafData)nextentry.data).getData();
       try {
 	tuple1 = f.getRecord(rid);
       }
@@ -268,6 +290,14 @@ public class IndexScan extends Iterator {
 	  throw new IndexException(e, "BTree error in destroying index scan.");
 	}
       }
+      else if (indScan instanceof IntervalTFileScan) {
+    		try {
+    			  ((IntervalTFileScan)indScan).DestroyIntervalTreeFileScan();
+    			}
+    			catch(Exception e) {
+    			  throw new IndexException(e, "BTree error in destroying index scan.");
+    			}
+    		      }
       
       closeFlag = true; 
     }

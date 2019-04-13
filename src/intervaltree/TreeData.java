@@ -7,11 +7,11 @@ public class TreeData extends DataClass {
 
 	private RID rid;
 
-	public RID getRid() {
+	public RID getData() {
 		return new RID(rid.pageNo, rid.slotNo);
 	}
 
-	public void setRid(RID rid) {
+	public void setData(RID rid) {
 		this.rid = new RID(rid.pageNo, rid.slotNo);
 	}
 

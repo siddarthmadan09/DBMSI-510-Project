@@ -13,6 +13,13 @@ public class Intervaltype {
 		this.end = interval.end;
 		
 	}
+	
+	public Intervaltype(int starter, int ender) {
+		super();
+		this.start = starter;
+		this.end = ender;
+		
+	}
 
 	private int start;
 	private int end;

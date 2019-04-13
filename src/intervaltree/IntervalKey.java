@@ -5,23 +5,33 @@ import global.Intervaltype;
 
 public class IntervalKey extends KeyClass {
 
-	private Intervaltype interval;
+	private Intervaltype key;
 	
 	public IntervalKey(Intervaltype interval) {
 		super();
-		this.interval = new Intervaltype(interval);
+		this.key = new Intervaltype(interval);
 	}
+
+	
+	
+	public IntervalKey(int start, int end) {
+		super();
+		this.key = new Intervaltype(start,end);
+		
+	}
+
+
 
 	@Override
 	public String toString() {
-		return "IntervalKey [interval=" + interval + "]";
+		return "IntervalKey [interval=" + key + "]";
 	}
 
-	public Intervaltype getInterval() {
-		return new Intervaltype(interval);
+	public Intervaltype getKey() {
+		return new Intervaltype(key);
 	}
 
-	public void setInterval(Intervaltype interval) {
-		this.interval = new Intervaltype(interval);
+	public void setKey(Intervaltype interval) {
+		this.key = new Intervaltype(interval);
 	}
 }
