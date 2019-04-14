@@ -135,8 +135,7 @@ class PTDriver implements GlobalConst {
           System.err.println (""+e);
         }
 
-
-        this.sysdef = new SystemDefs( dbpath, 1000, NUMBUF, "Clock" );
+        this.sysdef = new SystemDefs( dbpath, 100000, NUMBUF, "Clock" );
         
         this.heap = null;
         try {
@@ -169,6 +168,80 @@ class PTDriver implements GlobalConst {
         }
         
         
+        Iterator it = null;
+        AttrType [] ltypes = new AttrType[3];
+      ltypes[0] = new AttrType(AttrType.attrInterval);
+      ltypes[1]=new AttrType(AttrType.attrInteger); 
+      ltypes[2]=new AttrType(AttrType.attrString);
+      
+        short []   lsizes = new short[1];
+            lsizes[0]=10;
+           
+        AttrType [] rtypes = {
+      new AttrType(AttrType.attrInterval), 
+      new AttrType(AttrType.attrInteger), 
+      new AttrType(AttrType.attrString), 
+        };
+        
+        short  []  rsizes = new short[1] ;
+        rsizes[0] = 10;
+      
+
+            
+        FldSpec [] lprojection = {
+              new FldSpec(new RelSpec(RelSpec.outer), 1),
+              new FldSpec(new RelSpec(RelSpec.outer), 2),
+              new FldSpec(new RelSpec(RelSpec.outer), 3),
+
+                };
+
+//                boolean status=true;
+          try {
+          it  = new FileScan(heapFileName, ltypes, lsizes, 
+                     (short)3, (short)3,
+                     lprojection, null);
+            }
+            catch (Exception e) {
+          status = FAIL;
+          System.err.println (""+e);
+          e.printStackTrace();
+            }
+            
+            if (status != OK) {
+          //bail out
+           
+          System.err.println ("*** Error setting up scan for sailors");
+          Runtime.getRuntime().exit(1);
+            }
+            
+            AttrType []  outputtype = new AttrType[3];
+            
+            outputtype[0]= new AttrType(AttrType.attrInterval);
+            outputtype[1]=new AttrType(AttrType.attrInteger);
+            outputtype[2]=new AttrType(AttrType.attrString);
+                  
+            
+            Tuple t;
+            t = null;
+            try {
+              while ((t = it.get_next()) != null) {
+                t.print(outputtype);
+              }
+            }
+            catch (Exception e) {
+                System.err.println (""+e);
+                e.printStackTrace();
+                Runtime.getRuntime().exit(1);
+              }
+
+              System.out.println ("\n"); 
+              try {
+                it.close();
+              }
+              catch (Exception e) {
+              
+                e.printStackTrace();
+              }
     }
     
     private void menuPatternTreeIp() {
@@ -195,7 +268,10 @@ class PTDriver implements GlobalConst {
      * 
      * TODO: Create an only argument based running of tests.
      */
-    public void runTests (Boolean noArgs, String [] args, SystemDefs sysdefs) {
+    public void runTests (Boolean noArgs, String [] args, SystemDefs sysdefs, String HEAPFILENAME) {
+    	
+        QueryPlanExecutor query = new QueryPlanExecutor();
+  		
         while(true) {
             menuPatternTreeIp();
             int choice = GetInput.getChoice(1,3);
@@ -220,7 +296,7 @@ class PTDriver implements GlobalConst {
                         switch(choice2) {
                             case 1:
                                 System.out.println("Running query1");
-        //                      QueryPlans.query1(spt.getConditions());
+                                query.QueryPlanExecutor1(spt.getMap(), spt.getConditions(), spt.getInl(),0,HEAPFILENAME,-1,spt.getDynamic());
                                 break;
                             case 2:
                                 System.out.println("Running query2");
@@ -322,7 +398,7 @@ public class PatternTreeTest {
         PTDriver pttest = new PTDriver(xmlPath, HEAPFILENAME);
         
         System.out.println("Exporting done!");
-        pttest.runTests(noArgs, args, pttest.getSysdef());
+        pttest.runTests(noArgs, args, pttest.getSysdef(),HEAPFILENAME);
         
     }
 
