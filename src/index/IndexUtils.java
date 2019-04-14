@@ -221,12 +221,15 @@ public class IndexUtils {
 	   ConstructPageException
     {
       IndexFileScan indScan;
-      
+      // Working for all Tuples
       if (selects == null || selects[0] == null) {
 	indScan = ((IntervalTreeFile)indFile).new_scan(null, null);
 	return indScan;
       }
       
+      
+      
+      /// Need to check for conditions
       if (selects[1] == null) {
 	if (selects[0].type1.attrType != AttrType.attrSymbol && selects[0].type2.attrType != AttrType.attrSymbol) {
 	  throw new InvalidSelectionException("IndexUtils.java: Invalid selection condition"); 
@@ -238,11 +241,11 @@ public class IndexUtils {
 	if (selects[0].op.attrOperator == AttrOperator.aopEQ) {
 	  if (selects[0].type1.attrType != AttrType.attrSymbol) {
 	    key = getValue(selects[0], selects[0].type1, 1);
-	    indScan = ((BTreeFile)indFile).new_scan(key, key);
+	    indScan = ((IntervalTreeFile)indFile).new_scan(key, key);
 	  }
 	  else {
 	    key = getValue(selects[0], selects[0].type2, 2);
-	    indScan = ((BTreeFile)indFile).new_scan(key, key);
+	    indScan = ((IntervalTreeFile)indFile).new_scan(key, key);
 	  }
 	  return indScan;
 	}
@@ -251,11 +254,11 @@ public class IndexUtils {
 	if (selects[0].op.attrOperator == AttrOperator.aopLT || selects[0].op.attrOperator == AttrOperator.aopLE) {
 	  if (selects[0].type1.attrType != AttrType.attrSymbol) {
 	    key = getValue(selects[0], selects[0].type1, 1);
-	    indScan = ((BTreeFile)indFile).new_scan(null, key);
+	    indScan = ((IntervalTreeFile)indFile).new_scan(null, key);
 	  }
 	  else {
 	    key = getValue(selects[0], selects[0].type2, 2);
-	    indScan = ((BTreeFile)indFile).new_scan(null, key);
+	    indScan = ((IntervalTreeFile)indFile).new_scan(null, key);
 	  }
 	  return indScan;
 	}
@@ -264,11 +267,11 @@ public class IndexUtils {
 	if (selects[0].op.attrOperator == AttrOperator.aopGT || selects[0].op.attrOperator == AttrOperator.aopGE) {
 	  if (selects[0].type1.attrType != AttrType.attrSymbol) {
 	    key = getValue(selects[0], selects[0].type1, 1);
-	    indScan = ((BTreeFile)indFile).new_scan(key, null);
+	    indScan = ((IntervalTreeFile)indFile).new_scan(key, null);
 	  }
 	  else {
 	    key = getValue(selects[0], selects[0].type2, 2);
-	    indScan = ((BTreeFile)indFile).new_scan(key, null);
+	    indScan = ((IntervalTreeFile)indFile).new_scan(key, null);
 	  }
 	  return indScan;
 	}
