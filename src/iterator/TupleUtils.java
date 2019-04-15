@@ -105,7 +105,7 @@ public class TupleUtils
                 return 3; // other overlaps 2 cases
             }
 		}
-			
+			return 3;
 
                 /*
                  * if(t1_it.getStart()< t2_it.getStart()) { return -1; } else if

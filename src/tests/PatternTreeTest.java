@@ -76,7 +76,6 @@ class GetInput {
         return input;
       } 
 
-
     /*
      * Gets Gets return value of System.in
      */
@@ -111,6 +110,8 @@ class PTDriver implements GlobalConst {
         this.sysdef = sysdef;
     }
 
+    
+    
     /*
      * Parse input XML file and add contents into a new heap file.
      */
@@ -135,7 +136,7 @@ class PTDriver implements GlobalConst {
           System.err.println (""+e);
         }
 
-        this.sysdef = new SystemDefs( dbpath, 100000, NUMBUF, "Clock" );
+        this.sysdef = new SystemDefs( dbpath, 1000, NUMBUF, "Clock" );
         
         this.heap = null;
         try {
@@ -167,81 +168,6 @@ class PTDriver implements GlobalConst {
             return;
         }
         
-        
-        Iterator it = null;
-        AttrType [] ltypes = new AttrType[3];
-      ltypes[0] = new AttrType(AttrType.attrInterval);
-      ltypes[1]=new AttrType(AttrType.attrInteger); 
-      ltypes[2]=new AttrType(AttrType.attrString);
-      
-        short []   lsizes = new short[1];
-            lsizes[0]=10;
-           
-        AttrType [] rtypes = {
-      new AttrType(AttrType.attrInterval), 
-      new AttrType(AttrType.attrInteger), 
-      new AttrType(AttrType.attrString), 
-        };
-        
-        short  []  rsizes = new short[1] ;
-        rsizes[0] = 10;
-      
-
-            
-        FldSpec [] lprojection = {
-              new FldSpec(new RelSpec(RelSpec.outer), 1),
-              new FldSpec(new RelSpec(RelSpec.outer), 2),
-              new FldSpec(new RelSpec(RelSpec.outer), 3),
-
-                };
-
-//                boolean status=true;
-          try {
-          it  = new FileScan(heapFileName, ltypes, lsizes, 
-                     (short)3, (short)3,
-                     lprojection, null);
-            }
-            catch (Exception e) {
-          status = FAIL;
-          System.err.println (""+e);
-          e.printStackTrace();
-            }
-            
-            if (status != OK) {
-          //bail out
-           
-          System.err.println ("*** Error setting up scan for sailors");
-          Runtime.getRuntime().exit(1);
-            }
-            
-            AttrType []  outputtype = new AttrType[3];
-            
-            outputtype[0]= new AttrType(AttrType.attrInterval);
-            outputtype[1]=new AttrType(AttrType.attrInteger);
-            outputtype[2]=new AttrType(AttrType.attrString);
-                  
-            
-            Tuple t;
-            t = null;
-            try {
-              while ((t = it.get_next()) != null) {
-                t.print(outputtype);
-              }
-            }
-            catch (Exception e) {
-                System.err.println (""+e);
-                e.printStackTrace();
-                Runtime.getRuntime().exit(1);
-              }
-
-              System.out.println ("\n"); 
-              try {
-                it.close();
-              }
-              catch (Exception e) {
-              
-                e.printStackTrace();
-              }
     }
     
     private void menuPatternTreeIp() {
@@ -280,7 +206,8 @@ class PTDriver implements GlobalConst {
                 // Running simple pattern tree
                 case 1: 
                     System.out.println("Enter simple pattern tree file path: ");
-                    String ptPath = GetInput.getString();
+                 //   String ptPath = GetInput.getString();
+                   String ptPath="/Users/Shreya/Desktop/input.txt";
                     SimplePatternTreeParser spt = new SimplePatternTreeParser(ptPath);
                     if (spt.getConditions() == null) {
                         break;
@@ -297,9 +224,11 @@ class PTDriver implements GlobalConst {
                             case 1:
                                 System.out.println("Running query1");
                                 query.QueryPlanExecutor1(spt.getMap(), spt.getConditions(), spt.getInl(),0,HEAPFILENAME,-1,spt.getDynamic());
-                                break;
+                    			break;
                             case 2:
                                 System.out.println("Running query2");
+                                query.QueryPlanExecutor2(spt.getMap(), spt.getConditions(), spt.getInl(),0,HEAPFILENAME,-1,spt.getDynamic());
+                    	
         //                      QueryPlans.query2(spt.getConditions());
                                 break;
                             case 3:
@@ -375,7 +304,8 @@ public class PatternTreeTest {
         String xmlPath;
         if (args.length == 0) {
             System.out.println("Enter xml input file path: ");
-            xmlPath = GetInput.getString();
+           // xmlPath = GetInput.getString();
+            xmlPath="/Users/Shreya/Desktop/xml_sample_data1.xml";
         } else {
             xmlPath = args[0];
         }

@@ -185,7 +185,7 @@ import btree.*;
 		public boolean runTests() {
 
 			Disclaimer();
-			QueryXML();
+			//QueryXML();
 			QueryXML_Dynamic();
 			
 			/*
@@ -501,6 +501,8 @@ import btree.*;
 		      short  []  rsizes = new short[1] ;
 		      rsizes[0] = 10;
 		    
+		      
+		      //for the first condition
 		      if(sm==null) {
 		    	  
 		    	  FldSpec [] lprojection = {
@@ -803,7 +805,7 @@ import btree.*;
 			  
 			  //read the input file
 			  
-			  File file = new File("/Users/apurvabharatia/Documents/input.txt"); 
+			  File file = new File("/Users/Shreya/Desktop/input.txt"); 
 			  boolean status_dynamic = OK;
 
 			  String st; 
@@ -1589,7 +1591,7 @@ import btree.*;
 		//SystemDefs global = new SystemDefs("bingjiedb", 100, 70, null);
 		//JavabaseDB.openDB("/tmp/nwangdb", 5000);
 
-	    String path = "/Users/apurvabharatia/Documents/new_xml.xml";
+	    String path = "/Users/Shreya/Desktop/xml_sample_data1.xml";
 		SM_JoinTest jjoin = new SM_JoinTest(path);
 
 		sortstatus = jjoin.runTests();
