@@ -166,9 +166,11 @@ public class PredEval
 		  if (temp_ptr.flag <= 0 && comp_res != 0) op_res = true;
 		  break;
 		case AttrOperator.aopLE:
+		if( temp_ptr.flag > 0 && comp_res == 4) op_res = true;
 		  if (comp_res <= 0) op_res = true;
 		  break;
 		case AttrOperator.aopGE:
+			if( temp_ptr.flag > 0 && comp_res == 4) op_res = true;
 		  if (comp_res >= 0) op_res = true;
 		  break;
 		case AttrOperator.aopNOT:
