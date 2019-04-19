@@ -89,11 +89,17 @@ public class TupleUtils
 		//System.out.println(" s1 " + t1_it.getStart() + " e1: " + t1_it.getEnd() + " s2: " + t2_it.getStart() + " e2: "+ t2_it.getEnd());
 		
 		
-		if(t1_it.getStart() < t2_it.getStart() && t1_it.getEnd() > t2_it.getEnd()) {
+		if(t1_it.getStart() <= t2_it.getStart() && t1_it.getEnd() > t2_it.getEnd()) {
 			//System.out.println("if 1");
-			return 1;  // containment
-		} else if (t1_it.getStart() > t2_it.getStart() && t1_it.getEnd() < t2_it.getEnd()) {
-			//System.out.println("if 2");
+			if(t2_it.getEnd() == Integer.MIN_VALUE)
+				return 4;
+			else	
+				return 1;  // containment
+			
+		} else if (t1_it.getStart() >= t2_it.getStart() && t1_it.getEnd() < t2_it.getEnd()) {
+			
+			if(t2_it.getEnd() == Integer.MAX_VALUE)
+				return 4;
 			return 2;  // enclosure
 		} else if ( (t1_it.getStart() > t2_it.getStart() && t1_it.getEnd() > t2_it.getEnd() ) ||
 				(t1_it.getStart() < t2_it.getStart() && t1_it.getEnd() < t2_it.getEnd() ) ) {

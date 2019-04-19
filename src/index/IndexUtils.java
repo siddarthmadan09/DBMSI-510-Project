@@ -1,5 +1,6 @@
 package index;
 import global.*;
+import intervaltree.IntervalKey;
 import intervaltree.IntervalTreeFile;
 import btree.*;
 import iterator.*;
@@ -184,6 +185,9 @@ public class IndexUtils {
     case AttrType.attrInteger:
       if (choice == 1) return new IntegerKey(new Integer(cd.operand1.integer));
       else return new IntegerKey(new Integer(cd.operand2.integer));
+    case AttrType.attrInterval:
+        if (choice == 1) return new IntervalKey(new Intervaltype(cd.operand1.intervaltype));
+        else return new IntervalKey(new Intervaltype(cd.operand2.intervaltype));
     case AttrType.attrReal:
       /*
       // need FloatKey class in bt.java
@@ -251,6 +255,7 @@ public class IndexUtils {
 	}
 	
 	// symbol < value or symbol <= value
+	// 0 - Before condition in indexTree
 	if (selects[0].op.attrOperator == AttrOperator.aopLT || selects[0].op.attrOperator == AttrOperator.aopLE) {
 	  if (selects[0].type1.attrType != AttrType.attrSymbol) {
 	    key = getValue(selects[0], selects[0].type1, 1);
@@ -264,6 +269,7 @@ public class IndexUtils {
 	}
 	
 	// symbol > value or symbol >= value
+	// 3-  starts condition in indexTree
 	if (selects[0].op.attrOperator == AttrOperator.aopGT || selects[0].op.attrOperator == AttrOperator.aopGE) {
 	  if (selects[0].type1.attrType != AttrType.attrSymbol) {
 	    key = getValue(selects[0], selects[0].type1, 1);
@@ -282,6 +288,7 @@ public class IndexUtils {
       }
       else {
 	// selects[1] != null, must be a range query
+    	  // 7  - contains 
 	if (selects[0].type1.attrType != AttrType.attrSymbol && selects[0].type2.attrType != AttrType.attrSymbol) {
 	  throw new InvalidSelectionException("IndexUtils.java: Invalid selection condition"); 
 	}
@@ -327,6 +334,14 @@ public class IndexUtils {
 	  }
 	  return indScan;
 	  
+	case AttrType.attrInterval:
+		  if (((IntervalKey)key1).getKey().getStart() < ((IntervalKey)key2).getKey().getStart()) {
+		    indScan = ((IntervalTreeFile)indFile).new_scan(key1, key2);
+		  }
+		  else {
+		    indScan = ((IntervalTreeFile)indFile).new_scan(key2, key1);
+		  }
+		  return indScan;
 	case AttrType.attrReal:
 	  /*
 	    if ((FloatKey)key1.getKey().floatValue() < (FloatKey)key2.getKey().floatValue()) {

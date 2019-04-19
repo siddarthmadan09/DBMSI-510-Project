@@ -21,6 +21,7 @@ public class Intervaltype {
 		
 	}
 
+
 	private int start;
 	private int end;
 	
@@ -44,7 +45,8 @@ public class Intervaltype {
 	}
 	
 	public void assign(int a, int b) {
-		if (a >= START_MIN_VALUE && a <= START_MAX_VALUE && b >= END_MIN_VALUE && b <= END_MAX_VALUE) {
+		if (a >= START_MIN_VALUE && a <= START_MAX_VALUE && ((
+				b >= END_MIN_VALUE && b <= END_MAX_VALUE)|| (b==Integer.MIN_VALUE)) || (b==Integer.MAX_VALUE)) {
 		this.start = a;
 		this.end = b;
 		} else {

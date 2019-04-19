@@ -211,7 +211,7 @@ public class IntervalTIndexTest {
 		System.out.println("Inserted Records successfully...");
 
 	}
-	private void printIndex() {
+	private void printAllIndex() {
 
 		AttrType[] ltypes = new AttrType[3];
 			ltypes[0] = new AttrType(AttrType.attrInterval);
@@ -260,6 +260,205 @@ public class IntervalTIndexTest {
 			e.printStackTrace();
 		}		
 	}
+	private void printBeforeIndex() {
+
+		
+		CondExpr[] leftFilter = new CondExpr[2];
+		leftFilter[0] = new CondExpr();
+
+		leftFilter[0].next = null;
+		leftFilter[0].op = new AttrOperator(AttrOperator.aopLE);
+		leftFilter[0].type1 = new AttrType(AttrType.attrSymbol);
+		leftFilter[0].type2 = new AttrType(AttrType.attrInterval);
+		leftFilter[0].operand1.symbol = new FldSpec(new RelSpec(RelSpec.outer), 1);
+		leftFilter[0].operand2.intervaltype = new Intervaltype(-299973,Integer.MIN_VALUE);
+		leftFilter[0].flag =1;
+
+		leftFilter[1] = null;
+		AttrType[] ltypes = new AttrType[3];
+			ltypes[0] = new AttrType(AttrType.attrInterval);
+			ltypes[1] = new AttrType(AttrType.attrInteger);
+			ltypes[2] = new AttrType(AttrType.attrString);
+		
+
+		short[] lsizes = new short[1];
+			lsizes[0] = 10;
+
+
+		FldSpec[] lprojection = { new FldSpec(new RelSpec(RelSpec.outer), 1),
+				new FldSpec(new RelSpec(RelSpec.outer), 2), new FldSpec(new RelSpec(RelSpec.outer), 3),
+
+		};
+
+		IndexType b_index = new IndexType(IndexType.Interval_Index);
+		Iterator it = null;
+		try {
+			it = new IndexScan(b_index, HEAPFILENAME, INDEXNAME, ltypes, lsizes, 3, 3, lprojection, leftFilter, 3,
+					false);
+		}
+
+		catch (Exception e) {
+			System.err.println("*** Error creating scan for Index scan");
+			System.err.println("" + e);
+			Runtime.getRuntime().exit(1);
+		}
+		Tuple t;
+		t = null;
+		try {
+			while ((t = it.get_next()) != null) {
+				t.print(ltypes);
+			}
+		} catch (Exception e) {
+			System.err.println("" + e);
+			e.printStackTrace();
+			Runtime.getRuntime().exit(1);
+		}
+
+		System.out.println("\n");
+		try {
+			it.close();
+		} catch (Exception e) {
+
+			e.printStackTrace();
+		}		
+	}
+private void printAfterIndex() {
+
+		
+		CondExpr[] leftFilter = new CondExpr[2];
+		leftFilter[0] = new CondExpr();
+
+		leftFilter[0].next = null;
+		leftFilter[0].op = new AttrOperator(AttrOperator.aopGE);
+		leftFilter[0].type1 = new AttrType(AttrType.attrSymbol);
+		leftFilter[0].type2 = new AttrType(AttrType.attrInterval);
+		leftFilter[0].operand1.symbol = new FldSpec(new RelSpec(RelSpec.outer), 1);
+		leftFilter[0].operand2.intervaltype = new Intervaltype(-299973,Integer.MAX_VALUE);
+		leftFilter[0].flag =1;
+
+		leftFilter[1] = null;
+		AttrType[] ltypes = new AttrType[3];
+			ltypes[0] = new AttrType(AttrType.attrInterval);
+			ltypes[1] = new AttrType(AttrType.attrInteger);
+			ltypes[2] = new AttrType(AttrType.attrString);
+		
+
+		short[] lsizes = new short[1];
+			lsizes[0] = 10;
+
+
+		FldSpec[] lprojection = { new FldSpec(new RelSpec(RelSpec.outer), 1),
+				new FldSpec(new RelSpec(RelSpec.outer), 2), new FldSpec(new RelSpec(RelSpec.outer), 3),
+
+		};
+
+		IndexType b_index = new IndexType(IndexType.Interval_Index);
+		Iterator it = null;
+		try {
+			it = new IndexScan(b_index, HEAPFILENAME, INDEXNAME, ltypes, lsizes, 3, 3, lprojection, leftFilter, 3,
+					false);
+		}
+
+		catch (Exception e) {
+			System.err.println("*** Error creating scan for Index scan");
+			System.err.println("" + e);
+			Runtime.getRuntime().exit(1);
+		}
+		Tuple t;
+		t = null;
+		try {
+			while ((t = it.get_next()) != null) {
+				t.print(ltypes);
+			}
+		} catch (Exception e) {
+			System.err.println("" + e);
+			e.printStackTrace();
+			Runtime.getRuntime().exit(1);
+		}
+
+		System.out.println("\n");
+		try {
+			it.close();
+		} catch (Exception e) {
+
+			e.printStackTrace();
+		}		
+	}
+
+
+private void printSpanIndex() {
+
+	
+	CondExpr[] leftFilter = new CondExpr[3];
+	leftFilter[0] = new CondExpr();
+
+	leftFilter[0].next = null;
+	leftFilter[0].op = new AttrOperator(AttrOperator.aopLE);
+	leftFilter[0].type1 = new AttrType(AttrType.attrSymbol);
+	leftFilter[0].type2 = new AttrType(AttrType.attrInterval);
+	leftFilter[0].operand1.symbol = new FldSpec(new RelSpec(RelSpec.outer), 1);
+	leftFilter[0].operand2.intervaltype = new Intervaltype(-299967,Integer.MIN_VALUE);
+	leftFilter[0].flag =1;
+
+	leftFilter[1] = new CondExpr();
+	leftFilter[1].next = null;
+	leftFilter[1].op = new AttrOperator(AttrOperator.aopGE);
+	leftFilter[1].type1 = new AttrType(AttrType.attrSymbol);
+	leftFilter[1].type2 = new AttrType(AttrType.attrInterval);
+	leftFilter[1].operand1.symbol = new FldSpec(new RelSpec(RelSpec.outer), 1);
+	leftFilter[1].operand2.intervaltype = new Intervaltype(-299973,Integer.MAX_VALUE);
+	leftFilter[1].flag =1;
+	
+	leftFilter[2] = null;
+	
+	AttrType[] ltypes = new AttrType[3];
+		ltypes[0] = new AttrType(AttrType.attrInterval);
+		ltypes[1] = new AttrType(AttrType.attrInteger);
+		ltypes[2] = new AttrType(AttrType.attrString);
+	
+
+	short[] lsizes = new short[1];
+		lsizes[0] = 10;
+
+
+	FldSpec[] lprojection = { new FldSpec(new RelSpec(RelSpec.outer), 1),
+			new FldSpec(new RelSpec(RelSpec.outer), 2), new FldSpec(new RelSpec(RelSpec.outer), 3),
+
+	};
+
+	IndexType b_index = new IndexType(IndexType.Interval_Index);
+	Iterator it = null;
+	try {
+		it = new IndexScan(b_index, HEAPFILENAME, INDEXNAME, ltypes, lsizes, 3, 3, lprojection, leftFilter, 3,
+				false);
+	}
+
+	catch (Exception e) {
+		System.err.println("*** Error creating scan for Index scan");
+		System.err.println("" + e);
+		Runtime.getRuntime().exit(1);
+	}
+	Tuple t;
+	t = null;
+	try {
+		while ((t = it.get_next()) != null) {
+			t.print(ltypes);
+		}
+	} catch (Exception e) {
+		System.err.println("" + e);
+		e.printStackTrace();
+		Runtime.getRuntime().exit(1);
+	}
+
+	System.out.println("\n");
+	try {
+		it.close();
+	} catch (Exception e) {
+
+		e.printStackTrace();
+	}		
+}
+
 
 	private void Disclaimer() {
 		System.out.print("\n\nAny resemblance of persons in this database to"
@@ -277,9 +476,15 @@ public class IntervalTIndexTest {
 		nlj.createIndex();
 		
 		System.out.println("Hopefully created index");
-		System.out.println("Starting iterating index");
-		nlj.printIndex();
-	//	nlj.QueryNLJwithIndex(argv[1]);
+		
+		System.out.println("--------Iterating All Indexes----------");
+		nlj.printAllIndex();
+		System.out.println("--------Iterting 0- Before Indexes------");
+		nlj.printBeforeIndex();
+		System.out.println("--------Iterating 3- after Indexes-------");
+		nlj.printAfterIndex();
+		System.out.println("--------Iterating Span Indexes----------");
+		nlj.printSpanIndex();
 		sortstatus = true;
 		System.out.println("Hopefully created index");
 		
