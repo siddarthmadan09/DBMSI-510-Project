@@ -377,9 +377,13 @@ import btree.*;
 				  Tuple t;
 				    t = null;
 				    try {
-				      while ((t = sm_final.get_next()) != null) {
-				        t.print(outputtype);
-				      }
+				    	//SRTOperator(sm_final, outputtype, sizeofTuple);
+				    	//GRPOperator(sm_final, outputtype, sizeofTuple);
+				
+				 while ((t = sm_final.get_next()) != null) { 
+					 t.print(outputtype);
+					 }
+				 
 				    }
 				    catch (Exception e) {
 				      System.err.println (""+e);
@@ -404,7 +408,10 @@ import btree.*;
 			  String[] splited=conditions.get(conditionCount).split("\\s+");
 			  
 			 // if(dynamic.get(map.get(key)))
+			 // System.out.println(splited[0]);
+			  //System.out.println(splited[1]);
 			  int index=0;
+			  
 			  if(!dynamic.containsValue(map.get(Integer.valueOf(splited[0])))){
 				  dynamic.put(++dynamicCount, map.get(Integer.valueOf(splited[0])));
 			  }else {
@@ -413,8 +420,11 @@ import btree.*;
 					  	index = e.getKey();
 				  }
 			  }	  
-				  
-			  if(!dynamic.containsValue(map.get(Integer.valueOf(splited[1])))){
+			if( !splited[1].equals("*"))	  
+			{
+				System.out.println(splited[1]);
+				if(!dynamic.containsValue(map.get(Integer.valueOf(splited[1])))){
+			
 					  dynamic.put(++dynamicCount, map.get(Integer.valueOf(splited[1])));
 			  }else {
 						  for(Map.Entry<Integer,String> e : dynamic.entrySet()) {
@@ -422,7 +432,7 @@ import btree.*;
 							  	index = e.getKey();
 						  }
 					  }	  
-						
+			}		
 			  //parsing for condition expressions
 			  CondExpr [] leftFilter  = new CondExpr[2];
 		      leftFilter[0] = new CondExpr();
@@ -437,6 +447,11 @@ import btree.*;
 		      leftFilter[1] = null;
 		      
 		      CondExpr [] rightFilter = new CondExpr[2];
+		       if (splited[1].equals("*"))
+		       {
+		    	   rightFilter=null;
+		       }
+		       else {
 		      rightFilter[0] = new CondExpr();
 		      
 		      rightFilter[0].next  = null;
@@ -446,7 +461,7 @@ import btree.*;
 		      rightFilter[0].operand1.symbol = new FldSpec (new RelSpec(RelSpec.outer),3);
 		      rightFilter[0].operand2.string = map.get(Integer.valueOf(splited[1]));
 		      rightFilter[1] = null;
-
+		       }
 		      String relationship= splited[2];
 		      
 		      CondExpr [] outFilter = new CondExpr[3];
@@ -564,9 +579,18 @@ import btree.*;
 				  // SortMerge sm = null;
 				   FileScan am2 = null;
 					try {
-						am2  = new FileScan("xml.in", rtypes, rsizes, 
-								(short)3, (short)3,
-								proj1, rightFilter);
+						if (splited[1]!="*")
+						{
+							am2  = new FileScan("xml.in", rtypes, rsizes, 
+									(short)3, (short)3,
+									proj1, rightFilter);
+						}
+						else
+						{
+							am2  = new FileScan("xml.in", rtypes, rsizes, 
+									(short)3, (short)3,
+									proj1, null);	
+						}
 					}
 					catch (Exception e) {
 						//status = FAIL;
@@ -805,7 +829,7 @@ import btree.*;
 			  
 			  //read the input file
 			  
-			  File file = new File("/Users/Shreya/Desktop/input.txt"); 
+			  File file = new File("/home/nisha/Downloads/input.txt"); 
 			  boolean status_dynamic = OK;
 
 			  String st; 
@@ -1548,6 +1572,7 @@ import btree.*;
 //			try {
 //				while ((t = sm.get_next()) != null) {
 //					t.print(jtype);
+		
 //					qcheck5.Check(t);
 //				}
 //			}
@@ -1583,7 +1608,138 @@ import btree.*;
 					+ "developers...\n\n");
 		}
 
+public void SRTOperator(SortMerge sm, AttrType[] output, int sizeofTuple)
+{
+	
+	 short []   Ssizes = new short[sizeofTuple/3];
+	 for(int i=0;i<sizeofTuple/3;i++)
+	 {
+	    Ssizes[i] = (short) 10;
+	 }
+		 AttrType [] ltypes = new AttrType[sizeofTuple];
+	      for(int j=0;j<(sizeofTuple);j=j+3) {
+		ltypes[j] = new AttrType(AttrType.attrInterval);
+		ltypes[j+1]=new AttrType(AttrType.attrInteger); 
+		ltypes[j+2]=new AttrType(AttrType.attrString);
+	      }
+	      
+		TupleOrder ascending = new TupleOrder(TupleOrder.Ascending);
+	try {
+		Tuple t=null;
+		Sort sorted= new Sort(ltypes, (short)sizeofTuple, Ssizes, (Iterator)sm, (short)sizeofTuple, ascending, 10, 10);
+		try {
+			while((t=sorted.get_next())!=null)
+			{
+				t.print(output);
+			}
+		} catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+	}
+	catch(Exception e)
+	{
+		e.printStackTrace();
+	}
+	
+	
+}
 
+public void GRPOperator(SortMerge sm, AttrType[] output, int sizeofTuple)
+{
+	
+	 short []   Ssizes = new short[sizeofTuple/3];
+	 Map<String,Integer> groupedResults=new  HashMap<>();
+	 for(int i=0;i<sizeofTuple/3;i++)
+	 {
+	    Ssizes[i] = (short) 10;
+	 }
+		 AttrType [] ltypes = new AttrType[sizeofTuple];
+	      for(int j=0;j<(sizeofTuple);j=j+3) {
+		ltypes[j] = new AttrType(AttrType.attrInterval);
+		ltypes[j+1]=new AttrType(AttrType.attrInteger); 
+		ltypes[j+2]=new AttrType(AttrType.attrString);
+	      }
+	      
+		TupleOrder ascending = new TupleOrder(TupleOrder.Ascending);
+	try {
+		Tuple t=null;
+		Tuple tempT=null;//new Tuple(sizeofTuple);
+		Sort sorted= new Sort(ltypes, (short)sizeofTuple, Ssizes, (Iterator)sm, (short)sizeofTuple, ascending, 10, 10);
+        List<String> witnessTree=new ArrayList<>();
+		try {
+			while((t=sorted.get_next())!=null)
+			{
+				if(!groupedResults.containsKey(t.getStrFld(sizeofTuple)))
+				{
+					
+					groupedResults.put(t.getStrFld(sizeofTuple),1 );
+				}
+				else
+				{
+					int value= groupedResults.get(t.getStrFld(sizeofTuple))+1;
+					
+					groupedResults.put(t.getStrFld(sizeofTuple),value);
+				}
+				tempT=new Tuple(t);
+				
+				t.print(output);
+				
+				
+			}
+			
+			
+			for (int i =3;i<sizeofTuple-1;i+=3)
+			{
+				witnessTree.add(tempT.getStrFld(i));
+			}
+				/*
+				 * for(String s : witnessTree) { System.out.println(s); } for(String key :
+				 * groupedResults.keySet() ) { System.out.println("The key " + key +" value  "
+				 * +groupedResults.get(key)); }
+				 */
+			printGRPBY(groupedResults, witnessTree);
+			
+		} catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+	}
+	catch(Exception e)
+	{
+		e.printStackTrace();
+	}
+	
+	
+}
+  public void printGRPBY(Map<String,Integer> groupedResults, List<String> witnessTree)
+  {
+	  int subtreeCount=groupedResults.size();
+	 int i=0;
+	 StringBuffer output=new StringBuffer();
+	 output.append("\t\t");
+	 for(int l=0;l<witnessTree.size();l++)
+	 {
+		 output.append(witnessTree.get(l)+"\n\t\t\t");
+	 }
+	if( subtreeCount!=0)  
+	{
+		System.out.println("ROOT");
+		for(String key :groupedResults.keySet())
+		{
+			System.out.println("\tSTR"+(i++));
+			StringBuffer tabSpace=new StringBuffer("\t");
+			for(int j=0;j<groupedResults.get(key);j++)
+			{
+				System.out.println(output);
+				System.out.println("\t"+key);
+				
+			}
+		}
+		
+		
+	}
+  }
 
 	public static void main(String argv[])
 	{
@@ -1591,7 +1747,7 @@ import btree.*;
 		//SystemDefs global = new SystemDefs("bingjiedb", 100, 70, null);
 		//JavabaseDB.openDB("/tmp/nwangdb", 5000);
 
-	    String path = "/Users/Shreya/Desktop/xml_sample_data1.xml";
+	    String path = "/home/nisha/Downloads/xml_sample_data.xml";
 		SM_JoinTest jjoin = new SM_JoinTest(path);
 
 		sortstatus = jjoin.runTests();
