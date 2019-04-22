@@ -332,7 +332,7 @@ public class SortMerge extends Iterator implements GlobalConst
 		      done = true;
 		      return null;
 		    }
-		  System.out.println(tuple2.getStrFld(3)+"  "+tuple2.getIntervalFld(1).getStart());
+		 // System.out.println(tuple2.getStrFld(3)+"  "+tuple2.getIntervalFld(1).getStart());
 		  comp_res = wrapperCompare(sortFldType, tuple1,
 				  jc_in1, tuple2, jc_in2);
 							      

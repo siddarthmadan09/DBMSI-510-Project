@@ -212,13 +212,13 @@ public class Sort extends Iterator implements GlobalConst
       p_elems_curr_Q --;
       
       if (sortFldType.attrType == AttrType.attrInterval) {
-    	  if (lastElem.getIntervalFld(1).getStart() > cur_node.tuple.getIntervalFld(1).getStart()) {
+    	  if (lastElem.getIntervalFld(_sort_fld).getStart() > cur_node.tuple.getIntervalFld(_sort_fld).getStart()) {
     		  comp_res = -1;
-    	  } else if(lastElem.getIntervalFld(1).getStart() < cur_node.tuple.getIntervalFld(1).getStart()) {
+    	  } else if(lastElem.getIntervalFld(_sort_fld).getStart() < cur_node.tuple.getIntervalFld(_sort_fld).getStart()) {
     		  comp_res = 1; 
-    	  } else if ((lastElem.getIntervalFld(1).getEnd() > cur_node.tuple.getIntervalFld(1).getEnd())){
+    	  } else if ((lastElem.getIntervalFld(_sort_fld).getEnd() > cur_node.tuple.getIntervalFld(_sort_fld).getEnd())){
     		  comp_res = -1;
-    	  } else if ((lastElem.getIntervalFld(1).getEnd() < cur_node.tuple.getIntervalFld(1).getEnd())){
+    	  } else if ((lastElem.getIntervalFld(_sort_fld).getEnd() < cur_node.tuple.getIntervalFld(_sort_fld).getEnd())){
               comp_res = 1;
           }
     	  else {
@@ -603,6 +603,7 @@ public class Sort extends Iterator implements GlobalConst
     _in = new AttrType[len_in];
     n_cols = len_in;
     int n_strs = 0;
+
 
     for (int i=0; i<len_in; i++) {
       _in[i] = new AttrType(in[i].attrType);
