@@ -1,5 +1,7 @@
 package global;
 
+import bufmgr.PCounter;
+
 public interface GlobalConst {
 
   public static final int MINIBASE_MAXARRSIZE = 8000;
@@ -34,4 +36,5 @@ public interface GlobalConst {
   public static final int MAX_NAME = 50;
 
   public static final int INVALID_PAGE = -1;
+  public static final PCounter pcounter = PCounter.getSingletonInstance();
 }
