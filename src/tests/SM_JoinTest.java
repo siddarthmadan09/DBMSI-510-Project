@@ -377,12 +377,18 @@ import btree.*;
 				  Tuple t;
 				    t = null;
 				    try {
-				    	//SRTOperator(sm_final, outputtype, sizeofTuple);
-				    	//GRPOperator(sm_final, outputtype, sizeofTuple);
-				
-				 while ((t = sm_final.get_next()) != null) { 
-					 t.print(outputtype);
-					 }
+				    			
+				    	int num=4;
+				    	int sortFld=num*3;
+				    //	SRTOperator(sm_final, outputtype, sizeofTuple,sortFld);
+				    	
+				    
+				   	//	GRPOperator(sm_final, outputtype, sizeofTuple,sortFld);
+				    
+				 
+				 		while ((t = sm_final.get_next()) != null) { t.print(outputtype); }
+				 
+				 
 				 
 				    }
 				    catch (Exception e) {
@@ -411,8 +417,9 @@ import btree.*;
 			 // System.out.println(splited[0]);
 			  //System.out.println(splited[1]);
 			  int index=0;
+			
+				  if(!dynamic.containsValue(map.get(Integer.valueOf(splited[0])))){
 			  
-			  if(!dynamic.containsValue(map.get(Integer.valueOf(splited[0])))){
 				  dynamic.put(++dynamicCount, map.get(Integer.valueOf(splited[0])));
 			  }else {
 				  for(Map.Entry<Integer,String> e : dynamic.entrySet()) {
@@ -420,10 +427,11 @@ import btree.*;
 					  	index = e.getKey();
 				  }
 			  }	  
-			if( !splited[1].equals("*"))	  
-			{
+			  
+			
+		
 				System.out.println(splited[1]);
-				if(!dynamic.containsValue(map.get(Integer.valueOf(splited[1])))){
+				if(!dynamic.containsValue(map.get(Integer.valueOf(splited[1]))) ||  map.get(Integer.valueOf(splited[1])).equals("*")){
 			
 					  dynamic.put(++dynamicCount, map.get(Integer.valueOf(splited[1])));
 			  }else {
@@ -432,7 +440,7 @@ import btree.*;
 							  	index = e.getKey();
 						  }
 					  }	  
-			}		
+				
 			  //parsing for condition expressions
 			  CondExpr [] leftFilter  = new CondExpr[2];
 		      leftFilter[0] = new CondExpr();
@@ -447,8 +455,9 @@ import btree.*;
 		      leftFilter[1] = null;
 		      
 		      CondExpr [] rightFilter = new CondExpr[2];
-		       if (splited[1].equals("*"))
+		       if (map.get(Integer.parseInt(splited[1])).equals("*"))
 		       {
+		    	   
 		    	   rightFilter=null;
 		       }
 		       else {
@@ -579,18 +588,13 @@ import btree.*;
 				  // SortMerge sm = null;
 				   FileScan am2 = null;
 					try {
-						if (splited[1]!="*")
+						
 						{
 							am2  = new FileScan("xml.in", rtypes, rsizes, 
 									(short)3, (short)3,
 									proj1, rightFilter);
 						}
-						else
-						{
-							am2  = new FileScan("xml.in", rtypes, rsizes, 
-									(short)3, (short)3,
-									proj1, null);	
-						}
+						
 					}
 					catch (Exception e) {
 						//status = FAIL;
@@ -598,17 +602,15 @@ import btree.*;
 						e.printStackTrace();
 					}
 				      try {
-				    	  if (conditionCount==0)
-				    	  {
-				    		  n_out_fld=6;
-				    		  
-				    	  }
-				    	  else
-				    	  {
-				    		  n_out_fld=6+conditionCount*3;
-				    	  }
+				    	 
+				    	
+				    	  
+				    		  n_out_fld=(conditionCount+2)*3;
+				    	  
 				    	  //System.out.println("recursion");
-				    	  int joinColumn=((Integer.valueOf(splited[0]))-1)*3+1;
+				    	  
+				    	  //int joinColumn=((Integer.valueOf(splited[0]))-1)*3+1;
+				    	  int joinColumn=index*3+1;
 				    	  //System.out.println(joinColumn);
 				    	  sm = new SortMerge(ltypes, ltypes.length, lsizes,
 									rtypes, 3, rsizes,
@@ -617,7 +619,8 @@ import btree.*;
 									(conditionCount+1)*10,
 									sm, am2, 
 									false, false, ascending,
-									outFilter, proj1, n_out_fld);				      }
+									outFilter, proj1, n_out_fld);				    
+				    	  }
 				      catch (Exception e) {
 					System.err.println ("*** Error preparing for sm_join");
 					System.err.println (""+e);
@@ -1608,7 +1611,7 @@ import btree.*;
 					+ "developers...\n\n");
 		}
 
-public void SRTOperator(SortMerge sm, AttrType[] output, int sizeofTuple)
+public void SRTOperator(SortMerge sm, AttrType[] output, int sizeofTuple,int sortFld)
 {
 	
 	 short []   Ssizes = new short[sizeofTuple/3];
@@ -1626,7 +1629,7 @@ public void SRTOperator(SortMerge sm, AttrType[] output, int sizeofTuple)
 		TupleOrder ascending = new TupleOrder(TupleOrder.Ascending);
 	try {
 		Tuple t=null;
-		Sort sorted= new Sort(ltypes, (short)sizeofTuple, Ssizes, (Iterator)sm, (short)sizeofTuple, ascending, 10, 10);
+		Sort sorted= new Sort(ltypes, (short)sizeofTuple, Ssizes, (Iterator)sm, (short)sortFld, ascending, 10, 10);
 		try {
 			while((t=sorted.get_next())!=null)
 			{
@@ -1645,11 +1648,11 @@ public void SRTOperator(SortMerge sm, AttrType[] output, int sizeofTuple)
 	
 }
 
-public void GRPOperator(SortMerge sm, AttrType[] output, int sizeofTuple)
+public void GRPOperator(SortMerge sm, AttrType[] output, int sizeofTuple,int sortFld)
 {
 	
 	 short []   Ssizes = new short[sizeofTuple/3];
-	 Map<String,Integer> groupedResults=new  HashMap<>();
+	 Map<String,List<List<String>>> groupedResults=new  HashMap<>();
 	 for(int i=0;i<sizeofTuple/3;i++)
 	 {
 	    Ssizes[i] = (short) 10;
@@ -1665,40 +1668,39 @@ public void GRPOperator(SortMerge sm, AttrType[] output, int sizeofTuple)
 	try {
 		Tuple t=null;
 		Tuple tempT=null;//new Tuple(sizeofTuple);
-		Sort sorted= new Sort(ltypes, (short)sizeofTuple, Ssizes, (Iterator)sm, (short)sizeofTuple, ascending, 10, 10);
-        List<String> witnessTree=new ArrayList<>();
+		Sort sorted= new Sort(ltypes, (short)sizeofTuple, Ssizes, (Iterator)sm, (short)sortFld, ascending, 10, 10);
+        //List<List<String>> witnessTree=new ArrayList<>();
 		try {
 			while((t=sorted.get_next())!=null)
 			{
-				if(!groupedResults.containsKey(t.getStrFld(sizeofTuple)))
+				if(!groupedResults.containsKey(t.getStrFld(sortFld)))
 				{
 					
-					groupedResults.put(t.getStrFld(sizeofTuple),1 );
+					groupedResults.put(t.getStrFld(sortFld),new ArrayList<List<String>>());
 				}
-				else
-				{
-					int value= groupedResults.get(t.getStrFld(sizeofTuple))+1;
-					
-					groupedResults.put(t.getStrFld(sizeofTuple),value);
-				}
+				
 				tempT=new Tuple(t);
-				
+				List<String> witnessTree = new ArrayList<String>();
+				int currLevel = 0;
+				for (int i =3;i<sizeofTuple+1;i+=3)
+				{			
+			              witnessTree.add(String.valueOf(t.getIntFld(i-1)));
+				          witnessTree.add(t.getStrFld(i));
+				}
+				groupedResults.get(t.getStrFld(sortFld)).add(witnessTree);
 				t.print(output);
-				
+		
 				
 			}
 			
 			
-			for (int i =3;i<sizeofTuple-1;i+=3)
-			{
-				witnessTree.add(tempT.getStrFld(i));
-			}
+			
 				/*
 				 * for(String s : witnessTree) { System.out.println(s); } for(String key :
 				 * groupedResults.keySet() ) { System.out.println("The key " + key +" value  "
 				 * +groupedResults.get(key)); }
 				 */
-			printGRPBY(groupedResults, witnessTree);
+			printGRPBY(groupedResults);
 			
 		} catch(Exception e)
 		{
@@ -1712,28 +1714,38 @@ public void GRPOperator(SortMerge sm, AttrType[] output, int sizeofTuple)
 	
 	
 }
-  public void printGRPBY(Map<String,Integer> groupedResults, List<String> witnessTree)
+  public void printGRPBY(Map<String,List<List<String>>> groupedResults)
   {
 	  int subtreeCount=groupedResults.size();
 	 int i=0;
 	 StringBuffer output=new StringBuffer();
 	 output.append("\t\t");
-	 for(int l=0;l<witnessTree.size();l++)
-	 {
-		 output.append(witnessTree.get(l)+"\n\t\t\t");
-	 }
+	 int currLevel = 0;
+	
 	if( subtreeCount!=0)  
 	{
 		System.out.println("ROOT");
 		for(String key :groupedResults.keySet())
 		{
 			System.out.println("\tSTR"+(i++));
-			StringBuffer tabSpace=new StringBuffer("\t");
-			for(int j=0;j<groupedResults.get(key);j++)
+			for(List<String>  subtree : groupedResults.get(key))
 			{
-				System.out.println(output);
-				System.out.println("\t"+key);
-				
+				for (int j =0; j<subtree.size();j++)
+				{
+					if ((j % 2) == 0)
+					{
+						currLevel = Integer.parseInt(subtree.get(j));
+					}
+					else {
+						for (int i1 = 0; i1 < currLevel + 2; i1++)
+						{
+							System.out.print("\t");
+						}
+						System.out.println(subtree.get(j));
+					}
+					
+				}
+				//System.out.println(key);
 			}
 		}
 		
