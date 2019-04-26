@@ -457,6 +457,7 @@ public class SortMerge extends Iterator implements GlobalConst
 	  p_i1.close();
 	  p_i2.close();
 	}catch (Exception e) {
+	  e.printStackTrace();
 	  throw new JoinsException(e, "SortMerge.java: error in closing iterator.");
 	}
 	if (temp_file_fd1 != null) {
@@ -478,7 +479,7 @@ public class SortMerge extends Iterator implements GlobalConst
 	  temp_file_fd2 = null; 
 	}
 	io_buf1.close();
-	io_buf2.close();
+	io_buf2.close();   
 	closeFlag = true;
 	
       }

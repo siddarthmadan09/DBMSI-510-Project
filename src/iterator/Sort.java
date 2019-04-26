@@ -753,11 +753,10 @@ public class Sort extends Iterator implements GlobalConst
       catch (Exception e) {
 	throw new SortException(e, "Sort.java: error in closing iterator.");
       }
-      for(int i=0;i<i_buf.length;i++)
+     for(int i=0;i<i_buf.length;i++)
       {
-    	  i_buf[i].close();
+  	  i_buf[i].close();
       }
-      o_buf.close();
       if (useBM) {
 	try {
 	  free_buffer_pages(_n_pages, bufs_pids);

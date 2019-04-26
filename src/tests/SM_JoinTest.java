@@ -386,7 +386,8 @@ import btree.*;
 				   	//	GRPOperator(sm_final, outputtype, sizeofTuple,sortFld);
 				    
 				 
-				 		while ((t = sm_final.get_next()) != null) { t.print(outputtype); }
+				 		while ((t = sm_final.get_next()) != null)
+				 		{ t.print(outputtype); }
 				 
 				 
 				 
@@ -399,8 +400,7 @@ import btree.*;
 
 				    System.out.println ("\n"); 
 				    try {
-				      sm.close();
-				      sm_final.close();
+				      				      sm_final.close();
 				      
 				    }
 				    catch (Exception e) {
