@@ -134,6 +134,19 @@ public class OBuf implements GlobalConst{
       return t_written;
     }
   
+  public void close()
+  {
+
+		try {
+			_temp_fd.deleteFile();
+		} catch (InvalidSlotNumberException | FileAlreadyDeletedException | InvalidTupleSizeException
+				| HFBufMgrException | HFDiskMgrException | IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	
+  }
+  
   private boolean dirty;                                // Does this buffer contain dirty pages?
   private  int  t_per_pg,                        // # of tuples that fit in 1 page
     t_in_buf;                        // # of tuples that fit in the buffer

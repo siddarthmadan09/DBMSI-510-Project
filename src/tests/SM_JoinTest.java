@@ -400,6 +400,8 @@ import btree.*;
 				    System.out.println ("\n"); 
 				    try {
 				      sm.close();
+				      sm_final.close();
+				      
 				    }
 				    catch (Exception e) {
 				    
@@ -1759,7 +1761,7 @@ public void GRPOperator(SortMerge sm, AttrType[] output, int sizeofTuple,int sor
 		//SystemDefs global = new SystemDefs("bingjiedb", 100, 70, null);
 		//JavabaseDB.openDB("/tmp/nwangdb", 5000);
 
-	    String path = "/home/nisha/Downloads/xml_sample_data.xml";
+	    String path = "/home/nisha/Downloads/new_xml.xml";
 		SM_JoinTest jjoin = new SM_JoinTest(path);
 
 		sortstatus = jjoin.runTests();

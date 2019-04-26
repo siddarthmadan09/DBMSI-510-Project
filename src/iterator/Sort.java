@@ -748,11 +748,16 @@ public class Sort extends Iterator implements GlobalConst
        
       try {
 	_am.close();
+
       }
       catch (Exception e) {
 	throw new SortException(e, "Sort.java: error in closing iterator.");
       }
-
+      for(int i=0;i<i_buf.length;i++)
+      {
+    	  i_buf[i].close();
+      }
+      o_buf.close();
       if (useBM) {
 	try {
 	  free_buffer_pages(_n_pages, bufs_pids);
@@ -775,7 +780,9 @@ public class Sort extends Iterator implements GlobalConst
 	}
       }
       closeFlag = true;
-    } 
+    }
+    System.out.println("closing in sort");
+
   } 
 
 }

@@ -143,7 +143,19 @@ public class SpoofIbuf implements GlobalConst  {
 	}
       return tot_read;
     }
-  
+  public void close()
+  {
+	  hf_scan.closescan();
+	  try {
+		_fd.deleteFile();
+	} catch (InvalidSlotNumberException | FileAlreadyDeletedException | InvalidTupleSizeException | HFBufMgrException
+			| HFDiskMgrException | IOException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+	   System.out.println("closing in spoof");
+
+  }
   
   private  byte[][] _bufs;
   

@@ -332,7 +332,8 @@ public class SortMerge extends Iterator implements GlobalConst
 		      done = true;
 		      return null;
 		    }
-		 // System.out.println(tuple2.getStrFld(3)+"  "+tuple2.getIntervalFld(1).getStart());
+		// System.out.println("Tuple 1 " + tuple1.getStrFld(12) +"  " +tuple1.getIntervalFld(10).getStart() +" " +tuple1.getIntervalFld(10).getEnd());
+		 //System.out.println(tuple2.getStrFld(3)+"  "+tuple2.getIntervalFld(1).getStart()+" "+tuple2.getIntervalFld(1).getEnd());
 		  comp_res = wrapperCompare(sortFldType, tuple1,
 				  jc_in1, tuple2, jc_in2);
 							      
@@ -428,11 +429,13 @@ public class SortMerge extends Iterator implements GlobalConst
 	 
 	  if (PredEval.Eval(OutputFilter, TempTuple1, TempTuple2, _in1, _in2) == true)
 	    {
+		 
 	      Projection.Join(TempTuple1, _in1, 
 			      TempTuple2, _in2, 
 			      Jtuple, perm_mat, nOutFlds);
 	      return Jtuple;
 	    }
+	
 	}
     }
 
@@ -474,7 +477,10 @@ public class SortMerge extends Iterator implements GlobalConst
 	  }
 	  temp_file_fd2 = null; 
 	}
+	io_buf1.close();
+	io_buf2.close();
 	closeFlag = true;
+	
       }
     }
   
