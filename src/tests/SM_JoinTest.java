@@ -383,11 +383,11 @@ import btree.*;
 				    //	SRTOperator(sm_final, outputtype, sizeofTuple,sortFld);
 				    	
 				    
-				   	//	GRPOperator(sm_final, outputtype, sizeofTuple,sortFld);
+				   		GRPOperator(sm_final, outputtype, sizeofTuple,sortFld);
 				    
 				 
-				 		while ((t = sm_final.get_next()) != null)
-				 		{ t.print(outputtype); }
+				 	//	while ((t = sm_final.get_next()) != null)
+				 		//{ t.print(outputtype); }
 				 
 				 
 				 
@@ -1654,7 +1654,7 @@ public void GRPOperator(SortMerge sm, AttrType[] output, int sizeofTuple,int sor
 {
 	
 	 short []   Ssizes = new short[sizeofTuple/3];
-	 Map<String,List<List<String>>> groupedResults=new  HashMap<>();
+	// Map<String,List<List<String>>> groupedResults=new  HashMap<>();
 	 for(int i=0;i<sizeofTuple/3;i++)
 	 {
 	    Ssizes[i] = (short) 10;
@@ -1672,25 +1672,39 @@ public void GRPOperator(SortMerge sm, AttrType[] output, int sizeofTuple,int sor
 		Tuple tempT=null;//new Tuple(sizeofTuple);
 		Sort sorted= new Sort(ltypes, (short)sizeofTuple, Ssizes, (Iterator)sm, (short)sortFld, ascending, 10, 10);
         //List<List<String>> witnessTree=new ArrayList<>();
+		String currentGroup = null;
+		 int i=0;
+		 int currLevel = 0;
+		Boolean newgroup=false;
 		try {
+			System.out.println("ROOT");
 			while((t=sorted.get_next())!=null)
 			{
-				if(!groupedResults.containsKey(t.getStrFld(sortFld)))
-				{
-					
-					groupedResults.put(t.getStrFld(sortFld),new ArrayList<List<String>>());
-				}
+				if(!t.getStrFld(sortFld).equals(currentGroup))
+				{	
+				currentGroup=t.getStrFld(sortFld);
+				newgroup=true;
 				
-				tempT=new Tuple(t);
-				List<String> witnessTree = new ArrayList<String>();
-				int currLevel = 0;
-				for (int i =3;i<sizeofTuple+1;i+=3)
-				{			
-			              witnessTree.add(String.valueOf(t.getIntFld(i-1)));
-				          witnessTree.add(t.getStrFld(i));
 				}
-				groupedResults.get(t.getStrFld(sortFld)).add(witnessTree);
-				t.print(output);
+				else
+				{
+					newgroup=false;
+				}
+			
+				if(newgroup)
+				{
+					System.out.println("\tSTR"+(i++));
+				}
+				for(int j=3;j<sizeofTuple+1;j+=3)
+				{
+					currLevel = t.getIntFld(j-1);
+					for (int i1 = 0; i1 < currLevel+2; i1++)
+					{
+						System.out.print("\t");
+					}
+					System.out.println(t.getStrFld(j));
+				}
+			//	t.print(output);
 		
 				
 			}
@@ -1702,7 +1716,7 @@ public void GRPOperator(SortMerge sm, AttrType[] output, int sizeofTuple,int sor
 				 * groupedResults.keySet() ) { System.out.println("The key " + key +" value  "
 				 * +groupedResults.get(key)); }
 				 */
-			printGRPBY(groupedResults);
+		//	printGRPBY(groupedResults);
 			
 		} catch(Exception e)
 		{
@@ -1761,7 +1775,7 @@ public void GRPOperator(SortMerge sm, AttrType[] output, int sizeofTuple,int sor
 		//SystemDefs global = new SystemDefs("bingjiedb", 100, 70, null);
 		//JavabaseDB.openDB("/tmp/nwangdb", 5000);
 
-	    String path = "/home/nisha/Downloads/new_xml.xml";
+	    String path = "/home/nisha/Downloads/xml_sample_data.xml";
 		SM_JoinTest jjoin = new SM_JoinTest(path);
 
 		sortstatus = jjoin.runTests();
