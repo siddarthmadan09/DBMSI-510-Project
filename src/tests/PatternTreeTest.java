@@ -101,6 +101,8 @@ class PTDriver implements GlobalConst {
     private boolean FAIL = false;
     private Heapfile heap;
     private SystemDefs sysdef;
+
+    public static final String INDEXNAME = "BTreeIndexForNLJ";
     
     public SystemDefs getSysdef() {
         return sysdef;
@@ -110,8 +112,6 @@ class PTDriver implements GlobalConst {
         this.sysdef = sysdef;
     }
 
-    
-    
     /*
      * Parse input XML file and add contents into a new heap file.
      */
@@ -136,7 +136,7 @@ class PTDriver implements GlobalConst {
           System.err.println (""+e);
         }
 
-        this.sysdef = new SystemDefs( dbpath, 1000, NUMBUF, "Clock" );
+        this.sysdef = new SystemDefs( dbpath, 100000, NUMBUF, "Clock" );
         
         this.heap = null;
         try {
@@ -168,6 +168,165 @@ class PTDriver implements GlobalConst {
             return;
         }
         
+        
+        Iterator it = null;
+        AttrType [] ltypes = new AttrType[3];
+      ltypes[0] = new AttrType(AttrType.attrInterval);
+      ltypes[1]=new AttrType(AttrType.attrInteger); 
+      ltypes[2]=new AttrType(AttrType.attrString);
+      
+        short []   lsizes = new short[1];
+            lsizes[0]=10;
+           
+        AttrType [] rtypes = {
+      new AttrType(AttrType.attrInterval), 
+      new AttrType(AttrType.attrInteger), 
+      new AttrType(AttrType.attrString), 
+        };
+        
+        short  []  rsizes = new short[1] ;
+        rsizes[0] = 10;
+      
+
+            
+        FldSpec [] lprojection = {
+              new FldSpec(new RelSpec(RelSpec.outer), 1),
+              new FldSpec(new RelSpec(RelSpec.outer), 2),
+              new FldSpec(new RelSpec(RelSpec.outer), 3),
+
+                };
+
+//                boolean status=true;
+          try {
+          it  = new FileScan(heapFileName, ltypes, lsizes, 
+                     (short)3, (short)3,
+                     lprojection, null);
+            }
+            catch (Exception e) {
+          status = FAIL;
+          System.err.println (""+e);
+          e.printStackTrace();
+            }
+            
+            if (status != OK) {
+          //bail out
+           
+          System.err.println ("*** Error setting up scan for sailors");
+          Runtime.getRuntime().exit(1);
+            }
+            
+            AttrType []  outputtype = new AttrType[3];
+            
+            outputtype[0]= new AttrType(AttrType.attrInterval);
+            outputtype[1]=new AttrType(AttrType.attrInteger);
+            outputtype[2]=new AttrType(AttrType.attrString);
+                  
+            
+            Tuple t;
+            t = null;
+            try {
+              while ((t = it.get_next()) != null) {
+                t.print(outputtype);
+              }
+            }
+            catch (Exception e) {
+                System.err.println (""+e);
+                e.printStackTrace();
+                Runtime.getRuntime().exit(1);
+              }
+
+              System.out.println ("\n"); 
+              try {
+                it.close();
+              }
+              catch (Exception e) {
+              
+                e.printStackTrace();
+              }
+              
+        createIndex();
+    }
+    
+    public void createIndex() {
+
+        // Creating Index on heapfile
+        AttrType[] Stypes = { new AttrType(AttrType.attrInterval), new AttrType(AttrType.attrInteger),
+                new AttrType(AttrType.attrString) };
+
+        short[] Ssizes = new short[1];
+        Ssizes[0] = 10;
+
+        // _______________________________________________________________
+        // *******************create an scan on the heapfile**************
+        // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        // create a tuple of appropriate size
+
+        Tuple tt = new Tuple();
+        try {
+            tt.setHdr((short) 3, Stypes, Ssizes);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        int sizett = tt.size();
+        tt = new Tuple(sizett);
+        try {
+            tt.setHdr((short) 3, Stypes, Ssizes);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        Scan scan = null;
+
+        try {
+            scan = new Scan(heap);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Runtime.getRuntime().exit(1);
+        }
+
+        // create the index file
+        BTreeFile btf = null;
+        try {
+            btf = new BTreeFile(INDEXNAME, AttrType.attrString, 8, 1);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Runtime.getRuntime().exit(1);
+        }
+
+        RID rid = new RID();
+        String key = null;
+        Tuple temp = null;
+
+        try {
+            temp = scan.getNext(rid);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        while (temp != null) {
+            tt.tupleCopy(temp);
+
+            try {
+                key = tt.getStrFld(3);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            try {
+                btf.insert(new StringKey(key.trim()), rid);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            try {
+                temp = scan.getNext(rid);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        // close the file scan
+        scan.closescan();
     }
     
     private void menuPatternTreeIp() {
@@ -190,7 +349,15 @@ class PTDriver implements GlobalConst {
     
     /*
      * Runs choice driven tests for running multiple simple parse trees
-     * or multiple complex parse trees using selection of various query plans
+     * or multiple complex parse trees using selection of various query plansion in thread "main" java.lang.Error: Unresolved compilation problems: 
+    Syntax error, insert "VariableDeclarators" to complete LocalVariableDeclaration
+    Syntax error, insert ";" to complete LocalVariableDeclarationStatement
+    Sys cannot be resolved
+
+    at tests.PTDriver.createIndex(PatternTreeTest.java:196)
+    at tests.PTDriver.<init>(PatternTreeTest.java:171)
+    at tests.PatternTreeTest.main(PatternTreeTest.java:407)
+
      * 
      * TODO: Create an only argument based running of tests.
      */
@@ -206,8 +373,7 @@ class PTDriver implements GlobalConst {
                 // Running simple pattern tree
                 case 1: 
                     System.out.println("Enter simple pattern tree file path: ");
-                 //   String ptPath = GetInput.getString();
-                   String ptPath="/Users/Shreya/Desktop/input.txt";
+                    String ptPath = GetInput.getString();
                     SimplePatternTreeParser spt = new SimplePatternTreeParser(ptPath);
                     if (spt.getConditions() == null) {
                         break;
@@ -220,13 +386,14 @@ class PTDriver implements GlobalConst {
                         }
                      
                         // Running query plans 1, 2 or 3
+                        Iterator it = null;
                         switch(choice2) {
                             case 1:
                                 System.out.println("Running query1");
-                                query.QueryPlanExecutor1(spt.getMap(), spt.getConditions(), spt.getInl(),0,HEAPFILENAME,-1,spt.getDynamic());
-                    			break;
-                            case 2:
-                                System.out.println("Running query2");
+                                it = query.QueryPlanExecutor1(spt.getMap(), spt.getConditions(), spt.getInl(),0,HEAPFILENAME,-1);
+                                break;
+        				    case 2:
+        					System.out.println("Running query2");
                                 query.QueryPlanExecutor2(spt.getMap(), spt.getConditions(), spt.getInl(),0,HEAPFILENAME,-1,spt.getDynamic());
                     	
         //                      QueryPlans.query2(spt.getConditions());
@@ -241,19 +408,100 @@ class PTDriver implements GlobalConst {
                             default:
                                 System.out.println("Invalid choice. Enter choice again.");
                         }
+                        Iterator it2 = null;
+                        AttrType [] ltypes = new AttrType[3];
+                      ltypes[0] = new AttrType(AttrType.attrInterval);
+                      ltypes[1]=new AttrType(AttrType.attrInteger); 
+                      ltypes[2]=new AttrType(AttrType.attrString);
+                      
+                        short []   lsizes = new short[1];
+                            lsizes[0]=10;
+                           
+                        AttrType [] rtypes = {
+                      new AttrType(AttrType.attrInterval), 
+                      new AttrType(AttrType.attrInteger), 
+                      new AttrType(AttrType.attrString), 
+                        };
+                        
+                        short  []  rsizes = new short[1] ;
+                        rsizes[0] = 10;
+                      
+
+                            
+                        FldSpec [] lprojection = {
+                              new FldSpec(new RelSpec(RelSpec.outer), 1),
+                              new FldSpec(new RelSpec(RelSpec.outer), 2),
+                              new FldSpec(new RelSpec(RelSpec.outer), 3),
+
+                                };
+
+//                                boolean status=true;
+                        int status = 1;
+                          try {
+                          it2  = new FileScan(HEAPFILENAME, ltypes, lsizes, 
+                                     (short)3, (short)3,
+                                     lprojection, null);
+                            }
+                            catch (Exception e) {
+                          
+                          System.err.println (""+e);
+                          e.printStackTrace();
+                            }
+                            
+                            if (status != 1) {
+                          //bail out
+                           
+                          System.err.println ("*** Error setting up scan for sailors");
+                          Runtime.getRuntime().exit(1);
+                            }
+                            
+                            NestedLoopsJoins nlj = (NestedLoopsJoins)it;
+                            int sizeofTuple = nlj.getFinalTupleSize();
+                            
+                            AttrType []  outputtype = new AttrType[sizeofTuple];
+                              
+                            for(int i=0;i< sizeofTuple;i=i+3) {
+                                outputtype[i]= new AttrType(AttrType.attrInterval);
+                                outputtype[i+1]=new AttrType(AttrType.attrInteger);
+                                outputtype[i+2]=new AttrType(AttrType.attrString);
+                                  
+                              }
+                                  
+                            
+                            Tuple t;
+                            t = null;
+                            try {
+                              while ((t = it.get_next()) != null) {
+                                t.print(outputtype);
+                              }
+                            }
+                            catch (Exception e) {
+                                System.err.println (""+e);
+                                e.printStackTrace();
+                                Runtime.getRuntime().exit(1);
+                              }
+
+                              System.out.println ("\n"); 
+                              try {
+                                it.close();
+                              }
+                              catch (Exception e) {
+                              
+                                e.printStackTrace();
+                              }
                     }
+                    
+                    
+                    
                     break;
                 
                 // Running complex pattern tree
                 case 2:
                     System.out.println("Enter complex pattern tree file path: ");
                     String complexPtPath = GetInput.getString();
-                    ComplexPatternTreeParser spt2 = new ComplexPatternTreeParser(complexPtPath);
-                    if (spt2.getConditions1() == null) {
-                        break;
-                    }
+                    ComplexPatternTreeParser cpt = new ComplexPatternTreeParser(complexPtPath);
                     // Passing empty page replacement policy will pick up the previous replacement policy
-                    sysdefs.recreateBM(spt2.getBuf_size(), "");
+//                    sysdefs.recreateBM(cpt.getBuf_size(), "");
                     while(true) {
                         menuQueryPlans();
                         int choice2 = GetInput.getChoice(1,5);
@@ -265,7 +513,7 @@ class PTDriver implements GlobalConst {
                         switch(choice2) {
                             case 1:
                                 System.out.println("Running query1");
-        //                      QueryPlans.query1(spt2);
+                                cpt.execute(1);
                                 break;
                             case 2:
                                 System.out.println("Running query2");
@@ -304,8 +552,7 @@ public class PatternTreeTest {
         String xmlPath;
         if (args.length == 0) {
             System.out.println("Enter xml input file path: ");
-           // xmlPath = GetInput.getString();
-            xmlPath="/Users/Shreya/Desktop/xml_sample_data1.xml";
+            xmlPath = GetInput.getString();
         } else {
             xmlPath = args[0];
         }

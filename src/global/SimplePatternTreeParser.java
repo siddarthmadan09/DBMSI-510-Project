@@ -12,13 +12,13 @@ import java.util.List;
 import heap.Heapfile;
 import heap.Scan;
 import heap.Tuple;
-import iterator.NestedLoopsJoins;
+import iterator.Iterator;
 
 public class SimplePatternTreeParser {
     private List<String> conditions;
     private HashMap<Integer,String > map;
     private HashMap<Integer,String> dynamic;
-    NestedLoopsJoins inl = null;
+    private Iterator inl = null;
     
     
 	
@@ -38,11 +38,11 @@ public class SimplePatternTreeParser {
 		this.dynamic = dynamic;
 	}
 
-	public NestedLoopsJoins getInl() {
+	public Iterator getInl() {
 		return inl;
 	}
 
-	public void setInl(NestedLoopsJoins inl) {
+	public void setInl(Iterator inl) {
 		this.inl = inl;
 	}
 
@@ -87,6 +87,7 @@ public class SimplePatternTreeParser {
             //HashMap to save the output tuple indexes
       	    this.dynamic=dynamic; 
 		
+      	    
             
         }catch (FileNotFoundException e) {
             System.out.println("Error: Invalid file path in pattern tree");
