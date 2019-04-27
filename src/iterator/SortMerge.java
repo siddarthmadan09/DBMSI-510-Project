@@ -403,7 +403,6 @@ public class SortMerge extends Iterator implements GlobalConst
 	      // by checking the number of tuples in each equivalence class.
 	      
 	      if ((_tuple1=io_buf1.Get(TempTuple1)) == null)    
-	    	
 	    	  System.out.print("");// Should not occur
 		//System.out.println( "Equiv. class 1 in sort-merge has no tuples");
 	    }
