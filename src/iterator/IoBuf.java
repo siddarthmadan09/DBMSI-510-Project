@@ -186,6 +186,7 @@ public class IoBuf implements GlobalConst{
 	{
 	  // All the tuples are in the buffer, just read them out.
     	  done=false;
+    	  
 	  t_rd_from_pg = 0;
 	  curr_page    = 0;
 	}
