@@ -383,11 +383,11 @@ import btree.*;
 				    //	SRTOperator(sm_final, outputtype, sizeofTuple,sortFld);
 				    	
 				    
-				   		GRPOperator(sm_final, outputtype, sizeofTuple,sortFld);
+				   //		GRPOperator(sm_final, outputtype, sizeofTuple,sortFld);
 				    
 				 
-				 	//	while ((t = sm_final.get_next()) != null)
-				 		//{ t.print(outputtype); }
+				 		while ((t = sm_final.get_next()) != null)
+				 		{ t.print(outputtype); }
 				 
 				 
 				 
@@ -420,7 +420,7 @@ import btree.*;
 			  //System.out.println(splited[1]);
 			  int index=0;
 			
-				  if(!dynamic.containsValue(map.get(Integer.valueOf(splited[0])))){
+				  if(!dynamic.containsValue(map.get(Integer.valueOf(splited[0])))|| map.get(Integer.valueOf(splited[0])).equals("*")){
 			  
 				  dynamic.put(++dynamicCount, map.get(Integer.valueOf(splited[0])));
 			  }else {
@@ -446,7 +446,11 @@ import btree.*;
 			  //parsing for condition expressions
 			  CondExpr [] leftFilter  = new CondExpr[2];
 		      leftFilter[0] = new CondExpr();
-		      
+		
+		  if (map.get(Integer.parseInt(splited[0])).equals("*")) {
+		  
+		  leftFilter=null; } else {
+		 
 		      leftFilter[0].next  = null;
 		      leftFilter[0].op    = new AttrOperator(AttrOperator.aopEQ);
 		      leftFilter[0].type1 = new AttrType(AttrType.attrSymbol);
@@ -456,6 +460,7 @@ import btree.*;
 		      
 		      leftFilter[1] = null;
 		      
+		       }
 		      CondExpr [] rightFilter = new CondExpr[2];
 		       if (map.get(Integer.parseInt(splited[1])).equals("*"))
 		       {
@@ -612,7 +617,11 @@ import btree.*;
 				    	  //System.out.println("recursion");
 				    	  
 				    	  //int joinColumn=((Integer.valueOf(splited[0]))-1)*3+1;
+				    		
+				    	//	  System.out.println("the value of index" +index);
+				    		
 				    	  int joinColumn=index*3+1;
+				    	//  System.out.println("Join column :" +joinColumn);
 				    	  //System.out.println(joinColumn);
 				    	  sm = new SortMerge(ltypes, ltypes.length, lsizes,
 									rtypes, 3, rsizes,
