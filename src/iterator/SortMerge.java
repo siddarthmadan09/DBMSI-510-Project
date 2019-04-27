@@ -402,7 +402,8 @@ public class SortMerge extends Iterator implements GlobalConst
 	      // Another optimization that can be made is to choose the inner and outer
 	      // by checking the number of tuples in each equivalence class.
 	      
-	      //if ((_tuple1=io_buf1.Get(TempTuple1)) == null)                // Should not occur
+	      if ((_tuple1=io_buf1.Get(TempTuple1)) == null)    
+	    	  System.out.print("");// Should not occur
 		//System.out.println( "Equiv. class 1 in sort-merge has no tuples");
 	    }
 	  //System.out.println("From io 1 "+ _tuple1.getStrFld(3));

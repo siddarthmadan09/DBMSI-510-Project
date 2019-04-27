@@ -176,7 +176,6 @@ public class IoBuf implements GlobalConst{
     {
       
       mode = READ_BUFFER;
-    
       if (flushed)                   // Has the output buffe been flushed?
 	{
 	  // flush all the remaining tuples to disk.
