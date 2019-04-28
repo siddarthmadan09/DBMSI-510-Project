@@ -147,13 +147,14 @@ public class SpoofIbuf implements GlobalConst  {
   {
 	  hf_scan.closescan();
 	  try {
+		  
 		_fd.deleteFile();
 	} catch (InvalidSlotNumberException | FileAlreadyDeletedException | InvalidTupleSizeException | HFBufMgrException
 			| HFDiskMgrException | IOException e) {
 		// TODO Auto-generated catch block
 		e.printStackTrace();
 	}
-	   System.out.println("closing in spoof");
+	  
 
   }
   

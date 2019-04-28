@@ -193,13 +193,16 @@ public class IoBuf implements GlobalConst{
     }   
    public void close()
    {
-		/*
-		 * i_buf.close(); System.out.println("closing in iobuf"); try {
-		 * _temp_fd.deleteFile(); } catch (InvalidSlotNumberException |
-		 * FileAlreadyDeletedException | InvalidTupleSizeException | HFBufMgrException |
-		 * HFDiskMgrException | IOException e) { // TODO Auto-generated catch block
-		 * e.printStackTrace(); }
-		 */
+		
+		i_buf.close();
+		System.out.println("closing in iobuf");
+		try {
+			_temp_fd.deleteFile();
+		} catch (InvalidSlotNumberException | FileAlreadyDeletedException | InvalidTupleSizeException
+				| HFBufMgrException | HFDiskMgrException | IOException e) { // TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		 
    }
   
   public static final int WRITE_BUFFER =0;

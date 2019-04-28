@@ -353,7 +353,7 @@ public class SortMerge extends Iterator implements GlobalConst
 	      //io_buf1.Put(_tuple1);
 //	      while (wrapperCompare(sortFldType, tuple1,
 //			      jc_in1, TempTuple1, jc_in1)== 0)
-	      while(checkEquality(tuple1, TempTuple1))
+	      while(checkEquality(tuple1, TempTuple1, sortFldType))
 		{
 		  // Insert tuple1 into io_buf1
 		  try {
@@ -374,8 +374,9 @@ public class SortMerge extends Iterator implements GlobalConst
 	      
 //	      while (wrapperCompare(sortFldType, tuple2,
 //			      jc_in2, TempTuple2, jc_in2) == 0 )
-	    	  while( tuple2.getIntervalFld(jc_in2).getStart()> TempTuple1.getIntervalFld(jc_in1).getStart() &&
-	    			  tuple2.getIntervalFld(jc_in2).getEnd()< TempTuple1.getIntervalFld(jc_in1).getEnd()  )
+	    	  while( (sortFldType.attrType == AttrType.attrInterval && tuple2.getIntervalFld(jc_in2).getStart()> TempTuple1.getIntervalFld(jc_in1).getStart() &&
+	    			  tuple2.getIntervalFld(jc_in2).getEnd()< TempTuple1.getIntervalFld(jc_in1).getEnd()) ||
+	    	          (sortFldType.attrType == AttrType.attrString && tuple2.getStrFld(jc_in2).equals(TempTuple1.getStrFld(jc_in1)))  )
 		{
 		  // Insert tuple2 into io_buf2
 		  
@@ -554,15 +555,35 @@ public class SortMerge extends Iterator implements GlobalConst
   }
   
   
-  public boolean checkEquality(Tuple t1, Tuple t2){
+  public boolean checkEquality(Tuple t1, Tuple t2, AttrType sortFldType){
 	 
 	 try {
-		if ( t1.getIntervalFld(jc_in1).getStart() == t2.getIntervalFld(jc_in2).getStart() && 
-				  t1.getIntervalFld(jc_in1).getEnd() == t2.getIntervalFld(jc_in2).getEnd() ) {
-			
-			 return true;
-			
-			}
+	     switch(sortFldType.attrType) {
+    	     case AttrType.attrInterval:
+    	         if ( t1.getIntervalFld(jc_in1).getStart() == t2.getIntervalFld(jc_in2).getStart() && 
+                 t1.getIntervalFld(jc_in1).getEnd() == t2.getIntervalFld(jc_in2).getEnd() ) {
+           
+                    return true;
+                   
+                 }
+    	         return false;
+    	     case AttrType.attrString:
+    	         if ( t1.getStrFld(jc_in1).equals(t2.getStrFld(jc_in2))) {
+           
+                    return true;
+                   
+                 }
+                 return false;
+    	     case AttrType.attrInteger:
+    	         if ( t1.getIntFld(jc_in1) == t2.getIntFld(jc_in2)) {
+    	             
+                     return true;
+                    
+                  }
+                  return false;
+         
+	     }
+		
 		
 		 
 	} catch (FieldNumberOutOfBoundException e) {
@@ -571,11 +592,8 @@ public class SortMerge extends Iterator implements GlobalConst
 	} catch (IOException e) {
 		// TODO Auto-generated catch block
 		e.printStackTrace();
-	}
-	  
+	} 
 	return false;
-	  
-	  
   }
   
 }
