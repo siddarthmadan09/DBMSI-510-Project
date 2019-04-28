@@ -479,8 +479,8 @@ public class SortMerge extends Iterator implements GlobalConst
 	  }
 	  temp_file_fd2 = null; 
 	}
-	io_buf1.close();
-	io_buf2.close();   
+		//io_buf1.close();
+		//io_buf2.close();   
 	closeFlag = true;
 	
       }
