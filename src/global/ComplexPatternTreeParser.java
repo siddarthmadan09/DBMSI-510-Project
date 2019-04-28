@@ -229,7 +229,10 @@ public class ComplexPatternTreeParser {
         
           switch(operationSplit[0]) {
               case "CP":
-                  
+                  joinColumn1 = 2;
+                  joinColumn2 = 2;
+                  TJ(outputtype, outputtype2, it, it2, joinColumn1+1, joinColumn2+1,true );
+
                   break;
               case "NJ":
                   iTag = spt1.getMap().get(Integer.parseInt(operationSplit[1]));
@@ -255,7 +258,7 @@ public class ComplexPatternTreeParser {
                           break;
                       }
                   }
-                  TJ(outputtype, outputtype2, it, it2, joinColumn1+1, joinColumn2+1 );
+                  TJ(outputtype, outputtype2, it, it2, joinColumn1+1, joinColumn2+1,false );
 
                   break;
               case "TJ":
@@ -278,7 +281,7 @@ public class ComplexPatternTreeParser {
                           break;
                       }
                   }
-                  TJ(outputtype, outputtype2, it, it2, joinColumn1+1, joinColumn2+1 );
+                  TJ(outputtype, outputtype2, it, it2, joinColumn1+1, joinColumn2+1, false );
                   break;
               case "SRT":
                   SRT();
@@ -296,10 +299,10 @@ public class ComplexPatternTreeParser {
     public void NJ(AttrType []  ltypes, AttrType []  rtypes, iterator.Iterator it1, iterator.Iterator it2, int joinColumn1, int joinColumn2) {
         
         
-        TJ(ltypes, rtypes, it1, it2, joinColumn1, joinColumn2);
+        TJ(ltypes, rtypes, it1, it2, joinColumn1, joinColumn2, false);
     }
     
-    public void TJ(AttrType []  ltypes, AttrType []  rtypes, iterator.Iterator it1, iterator.Iterator it2, int joinColumn1, int joinColumn2 ) {
+    public void TJ(AttrType []  ltypes, AttrType []  rtypes, iterator.Iterator it1, iterator.Iterator it2, int joinColumn1, int joinColumn2, Boolean CP ) {
         try {
   
 //            TupleOrder ascending = new TupleOrder(TupleOrder.Ascending);
@@ -313,18 +316,22 @@ public class ComplexPatternTreeParser {
                 rsizes[j]=10;
             
             
-            CondExpr [] outFilter = new CondExpr[3];
-            outFilter[0] = new CondExpr();
-            outFilter[1] = null;
+            CondExpr [] outFilter = null;
+            if (!CP) {
+                outFilter = new CondExpr[3];
+                outFilter[0] = new CondExpr();
+                outFilter[1] = null;
+                
+                
+                outFilter[0].next  = null;
+                outFilter[0].op    = new AttrOperator(AttrOperator.aopEQ);
+                outFilter[0].type1 = new AttrType(AttrType.attrSymbol);
+                outFilter[0].type2 = new AttrType(AttrType.attrSymbol);
+                outFilter[0].operand1.symbol = new FldSpec (new RelSpec(RelSpec.outer),joinColumn1);
+                outFilter[0].operand2.symbol = new FldSpec (new RelSpec(RelSpec.innerRel),joinColumn2);
+                outFilter[0].flag=0;
+            }
             
-            
-            outFilter[0].next  = null;
-            outFilter[0].op    = new AttrOperator(AttrOperator.aopEQ);
-            outFilter[0].type1 = new AttrType(AttrType.attrSymbol);
-            outFilter[0].type2 = new AttrType(AttrType.attrSymbol);
-            outFilter[0].operand1.symbol = new FldSpec (new RelSpec(RelSpec.outer),joinColumn1);
-            outFilter[0].operand2.symbol = new FldSpec (new RelSpec(RelSpec.innerRel),joinColumn2);
-            outFilter[0].flag=0;
 
             
             SortMerge sm = CommonJoin(ltypes, lsizes, rtypes, rsizes, it1, it2, joinColumn1, joinColumn2, outFilter);
