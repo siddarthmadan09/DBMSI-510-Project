@@ -17,9 +17,15 @@ import global.IndexType;
 import global.Intervaltype;
 import global.RID;
 import global.SystemDefs;
+import heap.HFBufMgrException;
+import heap.HFDiskMgrException;
+import heap.HFException;
 import heap.Heapfile;
+import heap.InvalidSlotNumberException;
+import heap.InvalidTupleSizeException;
 import heap.NodeTuple;
 import heap.Scan;
+import heap.SpaceNotAvailableException;
 import heap.Tuple;
 import index.IndexScan;
 import intervaltree.IntervalKey;
@@ -143,7 +149,7 @@ public class IntervalTIndexTest {
 			System.err.println("" + e);
 		}
 
-		SystemDefs sysdef = new SystemDefs(dbpath, 1000, GlobalConst.NUMBUF, "Clock");
+		SystemDefs sysdef = new SystemDefs(dbpath, 100000, GlobalConst.NUMBUF, "Clock");
 
 		// creating the XML Interval relation
 		AttrType[] Stypes = new AttrType[3];
@@ -190,24 +196,29 @@ public class IntervalTIndexTest {
 		}
 
 		System.out.println("Parsing Completed......");
-		for (NodeTuple node : nodes) {
-			try {
-				t.setIntervalFld(1, node.getNodeIntLabel());
-				t.setIntFld(2, node.getLevel());
-				t.setStrFld(3, node.getName());
-
-			} catch (Exception e) {
-				System.err.println("*** Heapfile error in Tuple.setStrFld() ***");
-				e.printStackTrace();
-			}
-
-			try {
-				rid = f.insertRecord(t.returnTupleByteArray());
-			} catch (Exception e) {
-				System.err.println("*** error in Heapfile.insertRecord() ***");
-				e.printStackTrace();
-			}
-		}
+		/*
+		 * for (NodeTuple node : nodes) { try { t.setIntervalFld(1,
+		 * node.getNodeIntLabel()); t.setIntFld(2, node.getLevel()); t.setStrFld(3,
+		 * node.getName());
+		 * 
+		 * } catch (Exception e) {
+		 * System.err.println("*** Heapfile error in Tuple.setStrFld() ***");
+		 * e.printStackTrace(); }
+		 * 
+		 * try { rid = f.insertRecord(t.returnTupleByteArray()); } catch (Exception e) {
+		 * System.err.println("*** error in Heapfile.insertRecord() ***");
+		 * e.printStackTrace(); } }
+		 */
+	     try {
+	           f.insertRecordfromXML(nodes);
+	        } catch (InvalidSlotNumberException | InvalidTupleSizeException | SpaceNotAvailableException | HFException
+	                | HFBufMgrException | HFDiskMgrException | IOException e) {
+	            // TODO Auto-generated catch block
+	            e.printStackTrace();
+	            return;
+	        }
+		
+		
 		System.out.println("Inserted Records successfully...");
 
 	}
@@ -384,6 +395,68 @@ private void printAfterIndex() {
 			e.printStackTrace();
 		}		
 	}
+private void printEqualIndex() {
+
+	
+	CondExpr[] leftFilter = new CondExpr[2];
+	leftFilter[0] = new CondExpr();
+
+	leftFilter[0].next = null;
+	leftFilter[0].op = new AttrOperator(AttrOperator.aopEQ);
+	leftFilter[0].type1 = new AttrType(AttrType.attrSymbol);
+	leftFilter[0].type2 = new AttrType(AttrType.attrInterval);
+	leftFilter[0].operand1.symbol = new FldSpec(new RelSpec(RelSpec.outer), 1);
+	leftFilter[0].operand2.intervaltype = new Intervaltype(-299973,Integer.MAX_VALUE);
+	leftFilter[0].flag =1;
+
+	leftFilter[1] = null;
+	AttrType[] ltypes = new AttrType[3];
+		ltypes[0] = new AttrType(AttrType.attrInterval);
+		ltypes[1] = new AttrType(AttrType.attrInteger);
+		ltypes[2] = new AttrType(AttrType.attrString);
+	
+
+	short[] lsizes = new short[1];
+		lsizes[0] = 10;
+
+
+	FldSpec[] lprojection = { new FldSpec(new RelSpec(RelSpec.outer), 1),
+			new FldSpec(new RelSpec(RelSpec.outer), 2), new FldSpec(new RelSpec(RelSpec.outer), 3),
+
+	};
+
+	IndexType b_index = new IndexType(IndexType.Interval_Index);
+	Iterator it = null;
+	try {
+		it = new IndexScan(b_index, HEAPFILENAME, INDEXNAME, ltypes, lsizes, 3, 3, lprojection, leftFilter, 3,
+				false);
+	}
+
+	catch (Exception e) {
+		System.err.println("*** Error creating scan for Index scan");
+		System.err.println("" + e);
+		Runtime.getRuntime().exit(1);
+	}
+	Tuple t;
+	t = null;
+	try {
+		while ((t = it.get_next()) != null) {
+			t.print(ltypes);
+		}
+	} catch (Exception e) {
+		System.err.println("" + e);
+		e.printStackTrace();
+		Runtime.getRuntime().exit(1);
+	}
+
+	System.out.println("\n");
+	try {
+		it.close();
+	} catch (Exception e) {
+
+		e.printStackTrace();
+	}		
+}
 
 
 private void printSpanIndex() {
@@ -477,17 +550,18 @@ private void printSpanIndex() {
 		
 		System.out.println("Hopefully created index");
 		
-		System.out.println("--------Iterating All Indexes----------");
-		nlj.printAllIndex();
-		System.out.println("--------Iterting 0- Before Indexes------");
-		nlj.printBeforeIndex();
-		System.out.println("--------Iterating 3- after Indexes-------");
+		//System.out.println("--------Iterating All Indexes----------");
+		//nlj.printAllIndex();
+		//System.out.println("--------Iterting 0- Before Indexes------");
+		//nlj.printBeforeIndex();
+		//System.out.println("--------Iterating 3- after Indexes-------");
 		nlj.printAfterIndex();
-		System.out.println("--------Iterating Span Indexes----------");
-		nlj.printSpanIndex();
+		//System.out.println("--------Iterating Span Indexes----------");
+		//nlj.printSpanIndex();
 		sortstatus = true;
 		System.out.println("Hopefully created index");
 		
+		nlj.printEqualIndex();
 		}
 		catch(Exception e){
 			e.printStackTrace();

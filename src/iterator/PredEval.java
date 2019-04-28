@@ -149,7 +149,7 @@ public class PredEval
 		{
 		case AttrOperator.aopEQ:
 		  if( temp_ptr.flag > 0 && comp_res == 3) op_res = true; // xml change
-		  
+		  if( temp_ptr.flag > 0 && comp_res == 5) op_res = true;
 		  if (temp_ptr.flag <= 0 && comp_res == 0) op_res = true;
 		  break;
 		case AttrOperator.aopLT:

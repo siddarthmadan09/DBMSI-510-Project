@@ -88,8 +88,9 @@ public class TupleUtils
 		t2_it = t2.getIntervalFld(t2_fld_no);
 		//System.out.println(" s1 " + t1_it.getStart() + " e1: " + t1_it.getEnd() + " s2: " + t2_it.getStart() + " e2: "+ t2_it.getEnd());
 		
-		
-		if(t1_it.getStart() <= t2_it.getStart() && t1_it.getEnd() > t2_it.getEnd()) {
+		if(t1_it.getStart() == t2_it.getStart())
+			return 5;
+		if(t1_it.getStart() <= t2_it.getStart() && t1_it.getEnd() >= t2_it.getEnd()) {
 			//System.out.println("if 1");
 			if(t2_it.getEnd() == Integer.MIN_VALUE)
 				return 4;
