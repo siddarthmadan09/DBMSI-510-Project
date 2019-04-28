@@ -21,11 +21,15 @@ import index.IndexScan;
 import iterator.NestedLoopsJoins;
 import iterator.QueryPlanExecutor;
 import iterator.RelSpec;
+import iterator.SortException;
 import iterator.SortMerge;
+import iterator.TupleUtilsException;
 import iterator.CondExpr;
 import iterator.FileScan;
 import iterator.FldSpec;
 import iterator.Iterator;
+import iterator.JoinLowMemory;
+import iterator.JoinNewFailed;
 
 
 
@@ -54,6 +58,62 @@ public class ComplexPatternTreeParser {
     }
 
  
+    private SortMerge CommonJoin(AttrType []  ltypes, short []   lsizes, AttrType []  rtypes, short []   rsizes, iterator.Iterator it1, iterator.Iterator it2, int joinColumn1, int joinColumn2, CondExpr[] outFilter) {
+        
+        TupleOrder ascending = new TupleOrder(TupleOrder.Ascending);
+
+        FldSpec []  proj1 = new FldSpec[ltypes.length + rtypes.length-3];
+
+        for(int i=0;i< ltypes.length;i++) {
+            proj1[i]=new FldSpec(new RelSpec(RelSpec.outer), 1+i);
+           
+       }
+        int x = ltypes.length;
+        for(int i=1;i<= (rtypes.length/3);i++) {
+            if((joinColumn2/3) != i) {
+                proj1[x++]=new FldSpec(new RelSpec(RelSpec.innerRel), (i-1)*3+1);
+                proj1[x++]=new FldSpec(new RelSpec(RelSpec.innerRel), (i-1)*3+2);
+                proj1[x++]=new FldSpec(new RelSpec(RelSpec.innerRel), (i-1)*3+3);
+
+            }               
+       }
+        
+        //System.out.println("recursion");
+        
+      
+        //System.out.println(joinColumn);
+        SortMerge sm = null;;
+        try {
+            sm = new SortMerge(ltypes, ltypes.length, lsizes,
+                      rtypes, rtypes.length, rsizes,
+                      joinColumn1, 10, 
+                      joinColumn2, 10, 
+//                  (ltypes.length + rtypes.length)/3*10,
+                      20,
+                      it1, it2, 
+                      false, false, ascending,
+                      outFilter, proj1, (ltypes.length + rtypes.length-3));
+        } catch (JoinNewFailed e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (JoinLowMemory e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (SortException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (TupleUtilsException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        
+        return sm;
+    
+        
+    }
     public ComplexPatternTreeParser(String inputPath) {
         BufferedReader br;
         
@@ -125,31 +185,6 @@ public class ComplexPatternTreeParser {
             outputtype[i*3+2]=new AttrType(AttrType.attrString);
               
           }
-      
-//        Tuple t;
-//          t = null;
-//          try {
-//            while ((t = it.get_next()) != null) {
-//              t.print(outputtype);
-//            
-//            }
-//          }
-//          catch (Exception e) {
-//            System.err.println (""+e);
-//            e.printStackTrace();
-//            Runtime.getRuntime().exit(1);
-//          }
-//          
-//          
-//
-//          System.out.println ("\n"); 
-//          try {
-//            nlj.close();
-//          }
-//          catch (Exception e) {
-//          
-//            e.printStackTrace();
-//          }
            
             NestedLoopsJoins nlj2 = (NestedLoopsJoins)it2;
             int sizeofTuple2 = nlj2.getFinalTupleSize();
@@ -163,18 +198,6 @@ public class ComplexPatternTreeParser {
                   
               }
             
-//            t = null;
-//            try {
-//              while ((t = it2.get_next()) != null) {
-//                t.print(outputtype2);
-//              
-//              }
-//            }
-//            catch (Exception e) {
-//              System.err.println (""+e);
-//              e.printStackTrace();
-//              Runtime.getRuntime().exit(1);
-//            }
 
           String[] operationSplit = operation.split("\\s+");
           
@@ -198,7 +221,10 @@ public class ComplexPatternTreeParser {
 //            Runtime.getRuntime().exit(1);
 //          }
           
-
+          String iTag;
+          String jTag;
+          int joinColumn1 = 0;
+          int joinColumn2 = 0;
           
         
           switch(operationSplit[0]) {
@@ -206,14 +232,38 @@ public class ComplexPatternTreeParser {
                   
                   break;
               case "NJ":
-                  CP();
+                  iTag = spt1.getMap().get(Integer.parseInt(operationSplit[1]));
+                  jTag = spt2.getMap().get(Integer.parseInt(operationSplit[2]));
+
+                  joinColumn1 = 0;
+                  joinColumn2 = 0;
+                  
+                  
+                  for (Map.Entry<Integer, String> entry : query.getDynamic().entrySet()) {
+                      String value = entry.getValue();
+                      if (iTag.equals(value)) {
+                          joinColumn1 = (entry.getKey())*3+2;
+                          break;
+                      }
+                  }
+                  
+                  
+                  for (Map.Entry<Integer, String> entry : query2.getDynamic().entrySet()) {
+                      String value = entry.getValue();
+                      if (jTag.equals(value)) {
+                          joinColumn2 = (entry.getKey())*3+2;
+                          break;
+                      }
+                  }
+                  TJ(outputtype, outputtype2, it, it2, joinColumn1+1, joinColumn2+1 );
+
                   break;
               case "TJ":
                   
-                  String iTag = operationSplit[1];
-                  String jTag = operationSplit[2];
-                  int joinColumn1 = 0;
-                  int joinColumn2 = 0;
+                  iTag = operationSplit[1];
+                  jTag = operationSplit[2];
+                  joinColumn1 = 0;
+                  joinColumn2 = 0;
                   for (Map.Entry<Integer, String> entry : query.getDynamic().entrySet()) {
                       String value = entry.getValue();
                       if (iTag.equals(value)) {
@@ -243,14 +293,16 @@ public class ComplexPatternTreeParser {
             
         }
         
-    public void TJ() {
+    public void NJ(AttrType []  ltypes, AttrType []  rtypes, iterator.Iterator it1, iterator.Iterator it2, int joinColumn1, int joinColumn2) {
         
+        
+        TJ(ltypes, rtypes, it1, it2, joinColumn1, joinColumn2);
     }
     
     public void TJ(AttrType []  ltypes, AttrType []  rtypes, iterator.Iterator it1, iterator.Iterator it2, int joinColumn1, int joinColumn2 ) {
         try {
   
-            TupleOrder ascending = new TupleOrder(TupleOrder.Ascending);
+//            TupleOrder ascending = new TupleOrder(TupleOrder.Ascending);
 
             short []   lsizes = new short[((ltypes.length)/3)];
             for(int j=0;j<(ltypes.length)/3;j++)
@@ -273,38 +325,9 @@ public class ComplexPatternTreeParser {
             outFilter[0].operand1.symbol = new FldSpec (new RelSpec(RelSpec.outer),joinColumn1);
             outFilter[0].operand2.symbol = new FldSpec (new RelSpec(RelSpec.innerRel),joinColumn2);
             outFilter[0].flag=0;
-            
-            
-            FldSpec []  proj1 = new FldSpec[ltypes.length + rtypes.length-3];
 
-            for(int i=0;i< ltypes.length;i++) {
-                proj1[i]=new FldSpec(new RelSpec(RelSpec.outer), 1+i);
-               
-           }
-            int x = ltypes.length;
-            for(int i=1;i<= (rtypes.length/3);i++) {
-                if((joinColumn2/3) != i) {
-                    proj1[x++]=new FldSpec(new RelSpec(RelSpec.innerRel), (i-1)*3+1);
-                    proj1[x++]=new FldSpec(new RelSpec(RelSpec.innerRel), (i-1)*3+2);
-                    proj1[x++]=new FldSpec(new RelSpec(RelSpec.innerRel), (i-1)*3+3);
-
-                }               
-           }
             
-            //System.out.println("recursion");
-            
-          
-            //System.out.println(joinColumn);
-            SortMerge sm = new SortMerge(ltypes, ltypes.length, lsizes,
-                      rtypes, rtypes.length, rsizes,
-                      joinColumn1, 10, 
-                      joinColumn2, 10, 
-//                      (ltypes.length + rtypes.length)/3*10,
-                      20,
-                      it1, it2, 
-                      false, false, ascending,
-                      outFilter, proj1, (ltypes.length + rtypes.length-3));
-        
+            SortMerge sm = CommonJoin(ltypes, lsizes, rtypes, rsizes, it1, it2, joinColumn1, joinColumn2, outFilter);
             
             Tuple t;
             t = null;
