@@ -26,7 +26,7 @@ import heap.Tuple;
 
 
 public class ParseXML {
-	public static String path = "/Users/sidmadan/Documents/cse510/xml_sample_data1.xml";	
+	public static String path = "/home/siddharth/Courses/CSE510/git-project/DBMSI-510-Project/xml_sample_data_big.xml";	
 	public static final int min = Integer.MIN_VALUE;
 	public static NodeTuple convertElementToNode(Element element, int level, String name) {
 		NodeTuple n = new NodeTuple();
@@ -57,6 +57,8 @@ public class ParseXML {
     public static List<NodeTuple> parse(String path) throws Exception {
     //	FileWriter fileWriter = new FileWriter("/Users/sidmadan/Documents/cse510/samplefile2.txt");
     	//   PrintWriter printWriter = new PrintWriter(fileWriter);
+    	FileWriter fileWriter = new FileWriter("/home/siddharth/Courses/CSE510/git-project/DBMSI-510-Project/src/tests/samplefile2.txt");
+    	   PrintWriter printWriter = new PrintWriter(fileWriter);
         int counter = Intervaltype.START_MIN_VALUE;
         int level;
         Stack<NodeTuple> stack = new Stack<>();

@@ -491,6 +491,7 @@ class JoinsDriver implements GlobalConst {
     Disclaimer();
     QueryPC();
     
+    
     System.out.print ("Finished joins testing"+"\n");
    
     
@@ -655,7 +656,7 @@ class JoinsDriver implements GlobalConst {
 		  
 		  //read the input file
 		  
-		  File file = new File("/home/waykop/Desktop/DBMSI-510-Project/input.txt"); 
+		  File file = new File("/home/siddharth/Courses/CSE510/git-project/DBMSI-510-Project/src/tests/input.txt"); 
 		  boolean status = OK;
 		     
 		  
@@ -2688,9 +2689,10 @@ public class JoinTest
     //SystemDefs global = new SystemDefs("bingjiedb", 100, 70, null);
     //JavabaseDB.openDB("/tmp/nwangdb", 5000);
 
-    String path = "/home/waykop/Desktop/DBMSI-510-Project/xml_sample_data.xml";
+    //String path = "/Users/sidmadan/Documents/cse510/xml_sample_data1.xml";
     //String path = "/Users/sidmadan/Documents/cse510/xml_sample_data1.xml";
 
+    String path = "/home/siddharth/Courses/CSE510/git-project/DBMSI-510-Project/xml_sample_data_big.xml";
     JoinsDriver jjoin = new JoinsDriver(path);
 
     sortstatus = jjoin.runTests();
