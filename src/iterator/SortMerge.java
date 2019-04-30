@@ -324,7 +324,7 @@ public class SortMerge extends Iterator implements GlobalConst
 	      comp_res = wrapperCompare(sortFldType, tuple1,
 				  jc_in1, tuple2, jc_in2);
 	      //System.out.println("Comparison "+comp_res);
-	      while (( (comp_res >0 ) && _order.tupleOrder == TupleOrder.Ascending) ||
+	      while (( (comp_res >0 && comp_res != 5 ) && _order.tupleOrder == TupleOrder.Ascending) ||
 		     (comp_res < 0 && _order.tupleOrder == TupleOrder.Descending))
 		{
 		  if ((tuple2 = p_i2.get_next()) == null)
@@ -339,7 +339,7 @@ public class SortMerge extends Iterator implements GlobalConst
 							      
 		}
 	      
-	      if ( comp_res !=0)
+	      if ( comp_res !=0 && comp_res != 5)
 		{
 		  process_next_block = true;
 		  continue;
@@ -374,8 +374,8 @@ public class SortMerge extends Iterator implements GlobalConst
 	      
 //	      while (wrapperCompare(sortFldType, tuple2,
 //			      jc_in2, TempTuple2, jc_in2) == 0 )
-	    	  while( (sortFldType.attrType == AttrType.attrInterval && tuple2.getIntervalFld(jc_in2).getStart()> TempTuple1.getIntervalFld(jc_in1).getStart() &&
-	    			  tuple2.getIntervalFld(jc_in2).getEnd()< TempTuple1.getIntervalFld(jc_in1).getEnd()) ||
+	    	  while( (sortFldType.attrType == AttrType.attrInterval && tuple2.getIntervalFld(jc_in2).getStart()>= TempTuple1.getIntervalFld(jc_in1).getStart() &&
+	    			  tuple2.getIntervalFld(jc_in2).getEnd()<= TempTuple1.getIntervalFld(jc_in1).getEnd()) ||
 	    	          (sortFldType.attrType == AttrType.attrString && tuple2.getStrFld(jc_in2).equals(TempTuple1.getStrFld(jc_in1)))  )
 		{
 		  // Insert tuple2 into io_buf2

@@ -1,7 +1,10 @@
 package tests;
 
-import iterator.*;
+
 import iterator.Iterator;
+import iterator.NestedLoopsJoinsIndexScan;
+import iterator.QueryPlanExecutor;
+import iterator.SortMerge;
 import heap.*;
 import global.*;
 import index.*;
@@ -101,6 +104,9 @@ class PTDriver implements GlobalConst {
     private boolean FAIL = false;
     private Heapfile heap;
     private SystemDefs sysdef;
+    public PCounter pcounter = PCounter.getSingletonInstance();
+
+    public static final String INDEXNAME = "BTreeIndexForNLJ";
     
     public SystemDefs getSysdef() {
         return sysdef;
@@ -110,14 +116,12 @@ class PTDriver implements GlobalConst {
         this.sysdef = sysdef;
     }
 
-    
-    
     /*
      * Parse input XML file and add contents into a new heap file.
      */
     public PTDriver(String path, final String heapFileName) {
         
-        
+        pcounter.resetAllCount();
         String dbpath = "/tmp/"+System.getProperty("user.name")+".minibase.jointestdb"; 
         String logpath = "/tmp/"+System.getProperty("user.name")+".joinlog";
 
@@ -136,7 +140,7 @@ class PTDriver implements GlobalConst {
           System.err.println (""+e);
         }
 
-        this.sysdef = new SystemDefs( dbpath, 1000, NUMBUF, "Clock" );
+        this.sysdef = new SystemDefs( dbpath, 100000, NUMBUF, "Clock" );
         
         this.heap = null;
         try {
@@ -168,6 +172,94 @@ class PTDriver implements GlobalConst {
             return;
         }
         
+        pcounter.printThenResetCounters();
+        System.out.println("Exporting done!");
+        System.out.println("Creating index.");
+//        createIndex();
+        System.out.println("Index creation done.");
+        pcounter.printThenResetCounters();
+    }
+    
+    public void createIndex() {
+
+        // Creating Index on heapfile
+        AttrType[] Stypes = { new AttrType(AttrType.attrInterval), new AttrType(AttrType.attrInteger),
+                new AttrType(AttrType.attrString) };
+
+        short[] Ssizes = new short[1];
+        Ssizes[0] = 10;
+
+        // _______________________________________________________________
+        // *******************create an scan on the heapfile**************
+        // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        // create a tuple of appropriate size
+
+        Tuple tt = new Tuple();
+        try {
+            tt.setHdr((short) 3, Stypes, Ssizes);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        int sizett = tt.size();
+        tt = new Tuple(sizett);
+        try {
+            tt.setHdr((short) 3, Stypes, Ssizes);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        Scan scan = null;
+
+        try {
+            scan = new Scan(heap);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Runtime.getRuntime().exit(1);
+        }
+
+        // create the index file
+        BTreeFile btf = null;
+        try {
+            btf = new BTreeFile(INDEXNAME, AttrType.attrString, 8, 1);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Runtime.getRuntime().exit(1);
+        }
+
+        RID rid = new RID();
+        String key = null;
+        Tuple temp = null;
+
+        try {
+            temp = scan.getNext(rid);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        while (temp != null) {
+            tt.tupleCopy(temp);
+
+            try {
+                key = tt.getStrFld(3);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            try {
+                btf.insert(new StringKey(key.trim()), rid);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            try {
+                temp = scan.getNext(rid);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        // close the file scan
+        scan.closescan();
     }
     
     private void menuPatternTreeIp() {
@@ -190,24 +282,33 @@ class PTDriver implements GlobalConst {
     
     /*
      * Runs choice driven tests for running multiple simple parse trees
-     * or multiple complex parse trees using selection of various query plans
+     * or multiple complex parse trees using selection of various query plansion in thread "main" java.lang.Error: Unresolved compilation problems: 
+    Syntax error, insert "VariableDeclarators" to complete LocalVariableDeclaration
+    Syntax error, insert ";" to complete LocalVariableDeclarationStatement
+    Sys cannot be resolved
+
+    at tests.PTDriver.createIndex(PatternTreeTest.java:196)
+    at tests.PTDriver.<init>(PatternTreeTest.java:171)
+    at tests.PatternTreeTest.main(PatternTreeTest.java:407)
+
      * 
      * TODO: Create an only argument based running of tests.
      */
     public void runTests (Boolean noArgs, String [] args, SystemDefs sysdefs, String HEAPFILENAME) {
-    	
+        
         QueryPlanExecutor query = new QueryPlanExecutor();
-  		
+        
         while(true) {
+            
             menuPatternTreeIp();
+            int flag = 0;
             int choice = GetInput.getChoice(1,3);
             switch(choice) {
             
                 // Running simple pattern tree
                 case 1: 
                     System.out.println("Enter simple pattern tree file path: ");
-                 //   String ptPath = GetInput.getString();
-                   String ptPath="/Users/Shreya/Desktop/input.txt";
+                    String ptPath = GetInput.getString();
                     SimplePatternTreeParser spt = new SimplePatternTreeParser(ptPath);
                     if (spt.getConditions() == null) {
                         break;
@@ -220,44 +321,91 @@ class PTDriver implements GlobalConst {
                         }
                      
                         // Running query plans 1, 2 or 3
+                        Iterator it = null;
+                        NestedLoopsJoinsIndexScan  nlj = null;
                         switch(choice2) {
                             case 1:
-                                System.out.println("Running query1");
-                                query.QueryPlanExecutor1(spt.getMap(), spt.getConditions(), spt.getInl(),0,HEAPFILENAME,-1,spt.getDynamic());
-                    			break;
+                                System.out.println("Running query plan 1");
+                                
+                                it = (NestedLoopsJoinsIndexScan)it;
+                                it = query.QueryPlanExecutor1_iterative(spt.getMap(), spt.getConditions(), spt.getInl(),0,HEAPFILENAME,-1,spt.getDynamic());
+                                break;
                             case 2:
-                                System.out.println("Running query2");
-                                query.QueryPlanExecutor2(spt.getMap(), spt.getConditions(), spt.getInl(),0,HEAPFILENAME,-1,spt.getDynamic());
-                    	
+                            System.out.println("Running query plan 2");
+                            it = (SortMerge)it;
+                            it=query.QueryPlanExecutor2_iterative(spt.getMap(), spt.getConditions(), spt.getInl(),0,HEAPFILENAME,-1,spt.getDynamic());
+                        
         //                      QueryPlans.query2(spt.getConditions());
                                 break;
                             case 3:
-                                System.out.println("Running query3");
+                                System.out.println("Running query plan 3");
+                                it = (SortMerge)it;
+                                it=query.QueryPlanExecutor3(spt.getMap(), spt.getConditions(), spt.getInl(),0,HEAPFILENAME,-1,spt.getDynamic());
         //                      QueryPlans.query3(spt.getConditions());
                                 break;
                             case 5:
                                 System.exit(0);   
                                 break;
                             default:
-                                System.out.println("Invalid choice. Enter choice again.");
+                                it = (NestedLoopsJoinsIndexScan)it;
+                                it = query.QueryPlanExecutor1_iterative(spt.getMap(), spt.getConditions(), spt.getInl(),0,HEAPFILENAME,-1,spt.getDynamic());
+                                nlj = (NestedLoopsJoinsIndexScan)it;                        }
+                        
+                      
+
+                            
+                        
+                      int sizeofTuple = it.getFinalTupleSize();
+                      
+                      AttrType []  outputtype = new AttrType[sizeofTuple];
+                        
+                      for(int i=0;i< sizeofTuple;i=i+3) {
+                          outputtype[i]= new AttrType(AttrType.attrInterval);
+                          outputtype[i+1]=new AttrType(AttrType.attrInteger);
+                          outputtype[i+2]=new AttrType(AttrType.attrString);
+                            
                         }
+                    
+                      Tuple t;
+                        t = null;
+                        try {
+                          while ((t = it.get_next()) != null) {
+                            t.print(outputtype);
+                          }
+                        }
+                        catch (Exception e) {
+                          System.err.println (""+e);
+                          e.printStackTrace();
+                          Runtime.getRuntime().exit(1);
+                        }
+        
+                        System.out.println ("\n"); 
+                        try {
+                          it.close();
+                        }
+                        catch (Exception e) {
+                        
+                          e.printStackTrace();
+                        }
+                        pcounter.printThenResetCounters();
                     }
+                    
+                    
+                    
                     break;
                 
                 // Running complex pattern tree
                 case 2:
                     System.out.println("Enter complex pattern tree file path: ");
                     String complexPtPath = GetInput.getString();
-                    ComplexPatternTreeParser spt2 = new ComplexPatternTreeParser(complexPtPath);
-                    if (spt2.getConditions1() == null) {
-                        break;
-                    }
+                    ComplexPatternTreeParser cpt = new ComplexPatternTreeParser(complexPtPath);
                     // Passing empty page replacement policy will pick up the previous replacement policy
-                    sysdefs.recreateBM(spt2.getBuf_size(), "");
+//                    sysdefs.recreateBM(cpt.getBuf_size(), "");
                     while(true) {
                         menuQueryPlans();
                         int choice2 = GetInput.getChoice(1,5);
                         if (choice2 == 4) {
+                            flag  = 1;
                             break;
                         }
                      
@@ -265,29 +413,32 @@ class PTDriver implements GlobalConst {
                         switch(choice2) {
                             case 1:
                                 System.out.println("Running query1");
-        //                      QueryPlans.query1(spt2);
+                                cpt.execute2(1);
                                 break;
                             case 2:
                                 System.out.println("Running query2");
-        //                      QueryPlans.query2(spt2);
+                                cpt.execute2(2);
                                 break;
                             case 3:
                                 System.out.println("Running query3");
-        //                      QueryPlans.query3(spt2);
+                                cpt.execute2(3);
                                 break;
                             case 5:
                                 System.exit(0);
                                 break;
                             default:
+                                cpt.execute2(2);
+
                                 System.out.println("Invalid choice. Enter choice again.");
                         }
+                        break;
                     }
                     break;
                 case 3:
                     System.exit(0);
                     break;
                 default:
-                    System.exit(0);  
+                    System.exit(0); 
             }
         }
         
@@ -304,8 +455,7 @@ public class PatternTreeTest {
         String xmlPath;
         if (args.length == 0) {
             System.out.println("Enter xml input file path: ");
-           // xmlPath = GetInput.getString();
-            xmlPath="/Users/Shreya/Desktop/xml_sample_data1.xml";
+            xmlPath = GetInput.getString();
         } else {
             xmlPath = args[0];
         }
@@ -327,7 +477,6 @@ public class PatternTreeTest {
         //Parse the input xml and add the data into the database.
         PTDriver pttest = new PTDriver(xmlPath, HEAPFILENAME);
         
-        System.out.println("Exporting done!");
         pttest.runTests(noArgs, args, pttest.getSysdef(),HEAPFILENAME);
         
     }

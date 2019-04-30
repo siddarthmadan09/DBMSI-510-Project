@@ -585,6 +585,7 @@ public void setReplacerStr(String replacerStr) {
 	replacer.pin(frameNo);
 	
       }
+      pcounter.incrementBuffReadCount(frameNo);
     }
   
   /** 
@@ -830,7 +831,7 @@ public void setReplacerStr(String replacerStr) {
     
     try {
       SystemDefs.JavabaseDB.write_page(pageno, page);
-      pcounter.writeIncrement();
+      pcounter.incrementDiskWriteCount();
     }
     catch (Exception e) {
       throw new BufMgrException(e,"BufMgr.java: write_page() failed");
@@ -843,7 +844,7 @@ public void setReplacerStr(String replacerStr) {
     
     try {
       SystemDefs.JavabaseDB.read_page(pageno, page);
-      pcounter.readIncrement();
+      pcounter.incrementDiskReadCount();
     }
     catch (Exception e) {
       throw new BufMgrException(e,"BufMgr.java: read_page() failed");

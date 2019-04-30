@@ -1,5 +1,5 @@
 # modify the paths appropriately
-JDKPATH = /Library/Java/Home
+JDKPATH = $(JAVA_HOME)
 LIBPATH = .:..
 CLASSPATH = $(LIBPATH)
 BINPATH = $(JDKPATH)/bin

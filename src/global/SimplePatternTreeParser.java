@@ -72,7 +72,10 @@ public class SimplePatternTreeParser {
             
             for(int i=0;i<nodesCount;i++) {
                 st = br.readLine();
-                map.put(i+1, st);
+                if(st.contains("*"))
+                    map.put(i+1, st+""+i);
+                else
+                    map.put(i+1, st);
             }
             this.map=map;
             

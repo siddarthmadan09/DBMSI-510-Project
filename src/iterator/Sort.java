@@ -776,7 +776,7 @@ public class Sort extends Iterator implements GlobalConst
 	}
 		  catch (Exception e) {
 			  System.out.println(" ");
-			  e.printStackTrace();
+			  //e.printStackTrace();
 		    //throw new SortException(e, "Sort.java: Heapfile error");
 		  }
 		  temp_files[i] = null; 
@@ -786,8 +786,12 @@ public class Sort extends Iterator implements GlobalConst
       closeFlag = true;
     }
 
+@Override
+public int getFinalTupleSize() {
+    // TODO Auto-generated method stub
+    return 0;
+}
+
   } 
-
-
 
 

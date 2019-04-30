@@ -316,7 +316,12 @@ public class IndexScan extends Iterator {
   private Tuple         Jtuple;
   private int           t1_size;
   private int           _fldNum;       
-  private boolean       index_only;    
+  private boolean       index_only;
+@Override
+public int getFinalTupleSize() {
+    // TODO Auto-generated method stub
+    return 0;
+}    
 
 }
 
