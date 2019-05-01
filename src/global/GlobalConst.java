@@ -5,7 +5,7 @@ import bufmgr.PCounter;
 public interface GlobalConst {
 
   public static final int MINIBASE_MAXARRSIZE = 8000;
-  public static final int NUMBUF = 10000;
+  public static final int NUMBUF = 100000;
 
   /** Size of page. */
   public static final int MINIBASE_PAGESIZE = 8096;           // in bytes

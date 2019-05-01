@@ -548,7 +548,6 @@ public class ComplexPatternTreeParser {
             Collections.addAll(both, ltypes);
             Collections.addAll(both, rtypes);
             
-            
           t = null;
           try {
             while ((t = sm.get_next()) != null) {
@@ -596,7 +595,7 @@ public class ComplexPatternTreeParser {
    		TupleOrder ascending = new TupleOrder(TupleOrder.Ascending);
    	try {
    		Tuple t=null;
-   		Sort sorted= new Sort(ltypes, (short)sizeofTuple, Ssizes, (Iterator)sm, (short)sortFld, ascending, 10, buffer_size);
+   		Sort sorted= new Sort(ltypes, (short)sizeofTuple, Ssizes, (Iterator)sm, (short)sortFld, ascending, 200000, buffer_size);
    		try {
    			while((t=sorted.get_next())!=null)
    			{

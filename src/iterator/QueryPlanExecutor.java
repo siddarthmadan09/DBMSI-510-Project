@@ -752,7 +752,7 @@ public class QueryPlanExecutor {
 
     }
     
-    public SortMerge QueryPlanExecutor2_iterative(HashMap<Integer,String > map, List<String> conditions,Iterator sm ,int conditionCount, String heapFileName,int dynamicCount,HashMap<Integer,String> dynamic ) {
+public SortMerge QueryPlanExecutor2_iterative(HashMap<Integer,String > map, List<String> conditions,Iterator sm ,int conditionCount, String heapFileName,int dynamicCount,HashMap<Integer,String> dynamic ) {
         
         
         TupleOrder ascending = new TupleOrder(TupleOrder.Ascending);
@@ -899,34 +899,24 @@ public class QueryPlanExecutor {
         
                               };
         
-                          boolean status=true;
+                      boolean status=true;
+                      IndexType b_index = new IndexType(IndexType.B_Index);
                         try {
-                        sm  = new FileScan("xml.in", ltypes, lsizes, 
-                                   (short)3, (short)3,
-                                   lprojection, leftFilter);
-                        
-                        /*
-                         am  = new FileScan("xml.in", Stypes, Ssizes, 
-                            (short)3, (short)3,
-                            Sprojection, leftFilter);
-                         */
-                        Tuple sm_temp = null;
-                        System.out.println();
-                    /*  while( (sm_temp = sm.get_next()) != null) {
-                            
-                            System.out.println(sm_temp.getStrFld(3));
-                        }*/
-                          }
-                          catch (Exception e) {
-                        status = false;
-                        System.err.println (""+e);
-                        e.printStackTrace();
-                          }
-                          
+                            sm = new IndexScan(b_index, heapFileName, INDEXNAME, ltypes, lsizes, 3, 3, lprojection, leftFilter, 3,
+                                    false);
+                        }
+
+                        catch (Exception e) {
+                            System.err.println("* Error creating scan for Index scan");
+                            System.err.println("" + e);
+          
+                            Runtime.getRuntime().exit(1);
+                        }
+     
                           if (status != true) {
                         //bail out
                         
-                        System.err.println ("*** Error setting up scan for sailors");
+                        System.err.println ("* Error setting up scan for sailors");
                         Runtime.getRuntime().exit(1);
                           }
                     
@@ -949,17 +939,28 @@ public class QueryPlanExecutor {
                       proj1[fieldCounts-1]=new FldSpec(new RelSpec(RelSpec.innerRel), 3);
                         
                       // SortMerge sm = null;
-                       FileScan am2 = null;
-                        try {
-                            am2  = new FileScan("xml.in", rtypes, rsizes, 
-                                    (short)3, (short)3,
-                                    proj1, rightFilter);
-                        }
-                        catch (Exception e) {
-                            //status = FAIL;
-                            System.err.println (""+e);
-                            e.printStackTrace();
-                        }
+                       IndexScan am2 = null;
+                       FldSpec [] rprojection = {
+                               new FldSpec(new RelSpec(RelSpec.outer), 1),
+                               new FldSpec(new RelSpec(RelSpec.outer), 2),
+                               new FldSpec(new RelSpec(RelSpec.outer), 3),
+
+                                 };
+
+                             boolean status=true;
+                             IndexType b_index = new IndexType(IndexType.B_Index);
+                               try {
+                                   am2 = new IndexScan(b_index, heapFileName, INDEXNAME, rtypes, rsizes, 3, 3, rprojection, rightFilter, 3,
+                                           false);
+                               }
+
+                               catch (Exception e) {
+                                   System.err.println("* Error creating scan for Index scan");
+                                   System.err.println("" + e);
+                 
+                                   Runtime.getRuntime().exit(1);
+                               }
+
                           try {
                               
                               n_out_fld = (conditionCount +2)*3;
@@ -977,7 +978,7 @@ public class QueryPlanExecutor {
                                         false, false, ascending,
                                         outFilter, proj1, n_out_fld);                     }
                           catch (Exception e) {
-                        System.err.println ("*** Error preparing for sm_join");
+                        System.err.println ("* Error preparing for sm_join");
                         System.err.println (""+e);
                         e.printStackTrace();
                         Runtime.getRuntime().exit(1);
