@@ -23,7 +23,7 @@ public class NodeTuple extends Tuple {
 	}
 
 	public void setName(String name) {
-		this.name = name.substring(0, Math.min(name.length(), 5));;
+		this.name = name.substring(0, Math.min(name.length(), 5));
 	}
 
 	public int getLevel() {

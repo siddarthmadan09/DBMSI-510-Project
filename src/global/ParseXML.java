@@ -70,7 +70,7 @@ public class ParseXML {
         
         Element root = doc.getDocumentElement();
         
-        stack.add(convertElementToNode(root, 0 , root.getNodeName().toLowerCase()));
+        stack.add(convertElementToNode(root, 0 , root.getNodeName()));
         NodeTuple node;
         Intervaltype interval;
         while(!stack.isEmpty()) {
@@ -115,7 +115,7 @@ public class ParseXML {
 	    		  if(entries.item(0) != null) {
     	    		  if (node.getNodeTag().getChildNodes().item(0).getNodeType() == Node.TEXT_NODE
     	    				  && node.getNodeTag().getChildNodes().getLength() == 1 ) {
-    	    		      stack.push(convertElementToNode(null, level + 1, node.getNodeTag().getTextContent().toLowerCase()));  
+    	    		      stack.push(convertElementToNode(null, level + 1, node.getNodeTag().getTextContent()));  
     	    		  }
 	    		  }
     	    		  
@@ -126,8 +126,8 @@ public class ParseXML {
                                      Attr attrname = (Attr) namedNodeMap.item(j);
                                      
     
-                                    stack.push(convertElementToNode( null, level + 2, attrname.getValue().toLowerCase(), 2 ));                   
-                                    stack.push(convertElementToNode(null, level + 1, attrname.getName().toLowerCase(), 1));
+                                    stack.push(convertElementToNode( null, level + 2, attrname.getValue(), 2 ));                   
+                                    stack.push(convertElementToNode(null, level + 1, attrname.getName(), 1));
 
                             }       
                         } 
@@ -136,7 +136,7 @@ public class ParseXML {
     		                    Element element = (Element) entries.item(i);
    		    	            
     		    	            
-                                stack.push(convertElementToNode(element, level + 1, element.getNodeName().toLowerCase()));
+                                stack.push(convertElementToNode(element, level + 1, element.getNodeName()));
 
 
     		    	            

@@ -21,6 +21,7 @@ import java.util.Collections;
 
 import heap.Heapfile;
 import heap.Tuple;
+import index.IndexException;
 import index.IndexScan;
 import iterator.NestedLoopsJoins;
 import iterator.NestedLoopsJoinsIndexScan;
@@ -35,7 +36,8 @@ import iterator.FileScan;
 import iterator.FldSpec;
 import iterator.Iterator;
 import iterator.JoinLowMemory;
-import iterator.JoinNewFailed;	
+import iterator.JoinNewFailed;
+import iterator.JoinsException;	
 
 
 
@@ -96,8 +98,8 @@ public class ComplexPatternTreeParser {
                       rtypes, rtypes.length, rsizes,
                       joinColumn1, 10, 
                       joinColumn2, 10, 
-//                  (ltypes.length + rtypes.length)/3*10,
-                      buffer_size,
+                  (ltypes.length + rtypes.length)/3*30,
+//                      buffer_size,
                       it1, it2, 
                       false, false, ascending,
                       outFilter, proj1, (ltypes.length + rtypes.length-3));
@@ -164,10 +166,10 @@ public class ComplexPatternTreeParser {
     }
     
     public void execute2(int query_plan) {
-        for (int i = 0; i < buf_size.length; i++) {
+//        for (int i = 0; i < buf_size.length; i++) {
             pcounter.printThenResetCounters();
-            execute(query_plan, Integer.parseInt(buf_size[i]));
-        }
+            execute(query_plan, Integer.parseInt(buf_size[0]));
+//        }
     }
     public void execute(int query_plan, int buffer_size) {
         QueryPlanExecutor query = new QueryPlanExecutor();
@@ -373,7 +375,7 @@ public class ComplexPatternTreeParser {
               case "SRT":
                   iTag = spt1.getMap().get(Integer.parseInt(operationSplit[1]));
                   joinColumn1=0;
-                  for (Map.Entry<Integer, String> entry : query.getDynamic().entrySet()) {
+                  for (Map.Entry<Integer, String> entry : spt1.getDynamic().entrySet()) {
                       String value = entry.getValue();
                       if (iTag.equals(value)) {
                           joinColumn1 = ((entry.getKey())+1)*3;;
@@ -386,10 +388,10 @@ public class ComplexPatternTreeParser {
               case "GRP":
             	  iTag = spt1.getMap().get(Integer.parseInt(operationSplit[1]));
                   joinColumn1=0;
-                  for (Map.Entry<Integer, String> entry : query.getDynamic().entrySet()) {
+                  for (Map.Entry<Integer, String> entry : spt1.getDynamic().entrySet()) {
                       String value = entry.getValue();
                       if (iTag.equals(value)) {
-                          joinColumn1 = (entry.getKey())*3;
+                          joinColumn1 = ((entry.getKey())+1)*3;;
                           break;
                       }
                   }
@@ -400,6 +402,16 @@ public class ComplexPatternTreeParser {
                   
                   break;
           }
+          
+          try {
+            it.close();
+            if(!operationSplit[0].equals("SRT") && !operationSplit[0].equals("GRP")) {
+                it2.close();
+            }
+        } catch (JoinsException | SortException | IndexException | IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
     
     public void CP() {

@@ -1,5 +1,3 @@
-/* File Tuple.java */
-
 package heap;
 
 import java.io.*;
@@ -474,42 +472,47 @@ public void setHdr (short numFlds,  AttrType types[], short strSizes[])
   float fval;
   String sval;
 Intervaltype interval;
-  System.out.print("[");
+
+  System.out.print("Tuple : [");
   for (i=0; i< fldCnt-1; i++)
    {
     switch(type[i].attrType) {
 
    case AttrType.attrInteger:
-     val = Convert.getIntValue(fldOffset[i], data);
-     System.out.print(val);
+   //  val = Convert.getIntValue(fldOffset[i], data);
+    // System.out.print(val);
      break;
 
    case AttrType.attrReal:
      fval = Convert.getFloValue(fldOffset[i], data);
      System.out.print(fval);
+     System.out.print(", ");
      break;
 
    case AttrType.attrString:
      sval = Convert.getStrValue(fldOffset[i], data,fldOffset[i+1] - fldOffset[i]);
      System.out.print(sval);
+     System.out.print(" | ");
      break;
   
    case AttrType.attrInterval:
 	   interval = Convert.getIntervalValue(fldOffset[i], data);
 	   System.out.print(interval);
+	   System.out.print(", ");
 	   break;
-   case AttrType.attrNull:
-   case AttrType.attrSymbol:
+   case AttrType.attrNull:System.out.print(", ");
+   	   break;
+   case AttrType.attrSymbol:System.out.print(", ");
      break;
    }
-   System.out.print(", ");
+   
  } 
  
  switch(type[fldCnt-1].attrType) {
 
    case AttrType.attrInteger:
-     val = Convert.getIntValue(fldOffset[i], data);
-     System.out.print(val);
+ //    val = Convert.getIntValue(fldOffset[i], data);
+  //   System.out.print(val);
      break;
 
    case AttrType.attrReal:
@@ -567,4 +570,3 @@ Intervaltype interval;
 	     throw new FieldNumberOutOfBoundException (null, "TUPLE:TUPLE_FLDNO_OUT_OF_BOUND"); 
   }  
 }
-

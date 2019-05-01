@@ -265,7 +265,7 @@ public class QueryPlanExecutor {
                 
                NestedLoopsJoinsIndexScan inl = null;
                   try {
-                 inl = new NestedLoopsJoinsIndexScan(ltypes, ltypes.length, lsizes, rtypes, 3, rsizes, 10, it, heapFileName,
+                 inl = new NestedLoopsJoinsIndexScan(ltypes, ltypes.length, lsizes, rtypes, 3, rsizes, 30, it, heapFileName,
                         outFilter, rightFilter, proj1, fieldCounts, INDEXNAME, 3, 3, Indexprojection, 3, false);
                   }
                   catch (Exception e) {
@@ -326,7 +326,7 @@ public class QueryPlanExecutor {
                     CondExpr[] leftFilter = new CondExpr[2];
                     leftFilter[0] = new CondExpr();
         
-                    if (map.get(Integer.parseInt(splited[1])).contains("*"))
+                    if (map.get(Integer.parseInt(splited[0])).contains("*"))
                     {
                         leftFilter=null;
                     }
@@ -570,7 +570,7 @@ public class QueryPlanExecutor {
 
             // parsing for condition expressions
             CondExpr[] leftFilter = new CondExpr[2];
-            if (map.get(Integer.parseInt(splited[1])).contains("*"))
+            if (map.get(Integer.parseInt(splited[0])).contains("*"))
             {
                 leftFilter=null;
             }
@@ -792,7 +792,7 @@ public class QueryPlanExecutor {
                     CondExpr[] leftFilter = new CondExpr[2];
                     leftFilter[0] = new CondExpr();
                     
-                    if (map.get(Integer.parseInt(splited[1])).contains("*"))
+                    if (map.get(Integer.parseInt(splited[0])).contains("*"))
                     {
                         leftFilter=null;
                     }
@@ -972,7 +972,7 @@ public class QueryPlanExecutor {
                                         rtypes, 3, rsizes,
                                         joinColumn, 8, 
                                         1, 8, 
-                                        (conditionCount+1)*20,
+                                        (conditionCount+1)*100,
                                         sm, am2, 
                                         false, false, ascending,
                                         outFilter, proj1, n_out_fld);                     }

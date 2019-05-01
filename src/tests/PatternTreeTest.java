@@ -175,7 +175,7 @@ class PTDriver implements GlobalConst {
         pcounter.printThenResetCounters();
         System.out.println("Exporting done!");
         System.out.println("Creating index.");
-//        createIndex();
+        createIndex();
         System.out.println("Index creation done.");
         pcounter.printThenResetCounters();
     }
