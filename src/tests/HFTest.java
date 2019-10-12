@@ -35,8 +35,7 @@ public boolean runTests () {
 
     System.out.println ("\n" + "Running " + testName() + " tests...." + "\n");
 
-    SystemDefs sysdef = new SystemDefs(dbpath,100,100,"Clock");
-   
+    SystemDefs sysdef = new SystemDefs(dbpath,100,100,"Clock");   
     // Kill anything that might be hanging around
     String newdbpath;
     String newlogpath;
@@ -772,16 +771,181 @@ public boolean runTests () {
     return true;
   }
   
+  protected  boolean test7 ()  {
+		String path = "/Users/sidmadan/Documents/cse510/xml_sample_data.xml";	
+	    System.out.println ("\n  Test 7: Insert and scan fixed-size records\n");
+	    boolean status = OK;
+	    RID rid = new RID();
+	    Heapfile f = null;
+
+	    System.out.println ("  - Create a heap file\n");
+	    try {
+	      f = new Heapfile("file_7");
+	    }
+	    catch (Exception e) {
+	      status = FAIL;
+	      System.err.println ("*** Could not create heap file\n");
+	      e.printStackTrace();
+	    }
+
+	    if ( status == OK && SystemDefs.JavabaseBM.getNumUnpinnedBuffers()
+		 != SystemDefs.JavabaseBM.getNumBuffers() ) {
+	      System.err.println ("*** The heap file has left pages pinned\n");
+	      status = FAIL;
+	    }
+	      List<NodeTuple> nodes = new ArrayList<NodeTuple>();
+	    if ( status == OK ) {
+	      System.out.println ("  - Add " + 2 + " records to the file\n");
+
+	      try {
+	    	  nodes =  ParseXML.parse(path) ;
+	      }catch(Exception e) {
+	    	  e.printStackTrace();
+	      }
+	      
+	  for (NodeTuple n : nodes) {
+		
+		//fixed length record
+		DummyRecord rec = new DummyRecord(reclen);
+		
+//		rec.ival = i;
+//		rec.fval = (float) (i*2.5);
+
+		rec.interval = n.getNodeIntLabel();
+		if(n.getNodeTag() != null) {
+		rec.name = n.getNodeTag().getTagName();
+		} else {
+			rec.name = n.getName();
+		}
+		rec.ival = n.getLevel();
+
+		try {
+		  rid = f.insertRecord(rec.toByteArray1());
+		}
+		catch (Exception e) {
+		  status = FAIL;
+		  System.err.println ("*** Error inserting record " + 1 + "\n");
+		  e.printStackTrace();
+		}
+
+		if ( status == OK && SystemDefs.JavabaseBM.getNumUnpinnedBuffers()
+		     != SystemDefs.JavabaseBM.getNumBuffers() ) {
+		  
+		  System.err.println ("*** Insertion left a page pinned\n");
+		  status = FAIL;
+		}
+	  }
+	      
+	      try {
+		if ( f.getRecCnt() != nodes.size() ) {
+		  status = FAIL;
+		  System.err.println ("*** File reports " + f.getRecCnt() + 
+				      " records, not " + nodes.size() + "\n");
+		}
+	      }
+	      catch (Exception e) {
+		status = FAIL;
+		System.out.println (""+e);
+		e.printStackTrace();
+	      }
+	    }
+	    
+//	     In general, a sequential scan won't be in the same order as the
+//	     insertions.  However, we're inserting fixed-length records here, and
+//	     in this case the scan must return the insertion order.
+	    
+	    Scan scan = null;
+	    
+	    if ( status == OK ) {	
+	      System.out.println ("  - Scan the records just inserted\n");
+	      
+	      try {
+		scan = f.openScan();
+	      }
+	      catch (Exception e) {
+		status = FAIL;
+		System.err.println ("*** Error opening scan\n");
+		e.printStackTrace();
+	      }
+
+	      if ( status == OK &&  SystemDefs.JavabaseBM.getNumUnpinnedBuffers() 
+		   == SystemDefs.JavabaseBM.getNumBuffers() ) {
+		System.err.println ("*** The heap-file scan has not pinned the first page\n");
+		status = FAIL;
+	      }
+	    }	
+
+	    if ( status == OK ) {
+	      int len, i = 0;
+	      DummyRecord rec = null;
+	      Tuple tuple = new Tuple();
+	      
+	      boolean done = false;
+	      while (!done) { 
+		try {
+		  tuple = scan.getNext(rid);
+		  if (tuple == null) {
+		    done = true;
+		    break;
+		  }
+		}
+		catch (Exception e) {
+		  status = FAIL;
+		  e.printStackTrace();
+		}
+
+		if (status == OK && !done) {
+		  try {
+		    rec = new DummyRecord(tuple, 0);
+		  }
+		  catch (Exception e) {
+		    System.err.println (""+e);
+		    e.printStackTrace();
+		  }
+		  
+		  len = tuple.getLength();
+		  if ( len != reclen ) {
+		    System.err.println ("*** Record " + i + " had unexpected length " 
+					+ len + "\n");
+		    status = FAIL;
+		    break;
+		  }
+		  else if ( SystemDefs.JavabaseBM.getNumUnpinnedBuffers()
+			    == SystemDefs.JavabaseBM.getNumBuffers() ) {
+		    System.err.println ("On record " + i + ":\n");
+		    System.err.println ("*** The heap-file scan has not left its " +
+					"page pinned\n");
+		    status = FAIL;
+		    break;
+		  }
+
+	      System.out.println(rec.interval.getStart() +  "  " + rec.interval.getEnd() + " " + rec.ival  + " " +  rec.name);
+	
+		}	
+
+	}
+	
+	      //If it gets here, then the scan should be completed
+	
+	    }
+	    
+	    if ( status == OK )
+	        System.out.println ("  Test 7 completed successfully.\n");
+
+	    return status; 
+	  }
+  
   protected boolean runAllTests (){
     
     boolean _passAll = OK;
     
-    if (!test1()) { _passAll = FAIL; }
-    if (!test2()) { _passAll = FAIL; }
-    if (!test3()) { _passAll = FAIL; }
-    if (!test4()) { _passAll = FAIL; }
-    if (!test5()) { _passAll = FAIL; }
-    if (!test6()) { _passAll = FAIL; }
+//    if (!test1()) { _passAll = FAIL; }
+//    if (!test2()) { _passAll = FAIL; }
+//    if (!test3()) { _passAll = FAIL; }
+//    if (!test4()) { _passAll = FAIL; }
+//    if (!test5()) { _passAll = FAIL; }
+//    if (!test6()) { _passAll = FAIL; }
+    if (!test7()) { _passAll = FAIL; }
     
     return _passAll;
   }
@@ -798,7 +962,8 @@ class DummyRecord  {
   //content of the record
   public int    ival; 
   public float  fval;      
-  public String name;  
+  public String name; 
+  public Intervaltype interval;
 
   //length under control
   private int reclen;
@@ -832,6 +997,21 @@ class DummyRecord  {
    *  it will make a copy of the data in the tuple
    * @param atuple: the input tuple
    */
+  public DummyRecord(Tuple _atuple, int dummy) 
+	throws java.io.IOException{   
+    data = new byte[_atuple.getLength()];
+    data = _atuple.getTupleByteArray();
+    setRecLen(_atuple.getLength());
+    
+    setIntervalRec (data);
+    setLevelRec (data);
+    setStrRec (data);
+  }
+  
+  /** constructor: translate a tuple to a DummyRecord object
+   *  it will make a copy of the data in the tuple
+   * @param atuple: the input tuple
+   */
   public DummyRecord(Tuple _atuple) 
 	throws java.io.IOException{   
     data = new byte[_atuple.getLength()];
@@ -856,6 +1036,18 @@ class DummyRecord  {
     return data;
   }
   
+  /** convert this class objcet to a byte array
+   *  this is used when you want to write this object to a byte array
+   */
+  public byte [] toByteArray1() 
+    throws java.io.IOException {
+    //    data = new byte[reclen];
+    Convert.setIntervalValue(interval, 0, data); 
+    Convert.setIntValue (ival, 8, data);
+    Convert.setStrValue (name, 12, data);
+    return data;
+  }
+  
   /** get the integer value out of the byte array and set it to
    *  the int value of the DummyRecord object
    */
@@ -863,7 +1055,19 @@ class DummyRecord  {
     throws java.io.IOException {
     ival = Convert.getIntValue (0, _data);
   }
-
+  
+  /** get the integer value out of the byte array and set it to
+   *  the int value of the DummyRecord object
+   */
+  public void setLevelRec (byte[] _data) 
+    throws java.io.IOException {
+    ival = Convert.getIntValue (8, _data);
+  }
+  
+  public void setIntervalRec (byte[] _data) 
+		    throws java.io.IOException {
+		    interval = Convert.getIntervalValue(0, _data);
+  }
   /** get the float value out of the byte array and set it to
    *  the float value of the DummyRecord object
    */
@@ -879,7 +1083,7 @@ class DummyRecord  {
     throws java.io.IOException {
    // System.out.println("reclne= "+reclen);
    // System.out.println("data size "+_data.size());
-    name = Convert.getStrValue (8, _data, reclen-8);
+    name = Convert.getStrValue (12, _data, reclen-12);
   }
   
   //Other access methods to the size of the String field and 

@@ -2,6 +2,7 @@ package tests;
 //originally from : joins.C
 
 import iterator.*;
+import iterator.Iterator;
 import heap.*;
 import global.*;
 import index.*;
@@ -371,25 +372,144 @@ class JoinsDriver implements GlobalConst {
     
   }
   
+  
+  
+  public JoinsDriver(String path) {
+	    
+	    
+	    String dbpath = "/tmp/"+System.getProperty("user.name")+".minibase.jointestdb"; 
+	    String logpath = "/tmp/"+System.getProperty("user.name")+".joinlog";
+
+	    String remove_cmd = "/bin/rm -rf ";
+	    String remove_logcmd = remove_cmd + logpath;
+	    String remove_dbcmd = remove_cmd + dbpath;
+	    String remove_joincmd = remove_cmd + dbpath;
+
+	    try {
+	      Runtime.getRuntime().exec(remove_logcmd);
+	      Runtime.getRuntime().exec(remove_dbcmd);
+	      Runtime.getRuntime().exec(remove_joincmd);
+	    }
+	    catch (IOException e) {
+	      System.err.println (""+e);
+	    }
+
+	   
+	    /*
+	    ExtendedSystemDefs extSysDef = 
+	      new ExtendedSystemDefs( "/tmp/minibase.jointestdb", "/tmp/joinlog",
+				      1000,500,200,"Clock");
+	    */
+
+	    SystemDefs sysdef = new SystemDefs( dbpath, 1000, NUMBUF, "Clock" );
+	    
+	    // creating the XML Interval relation
+	    AttrType [] Stypes = new AttrType[3];
+	    Stypes[0] = new AttrType (AttrType.attrInterval);
+	    Stypes[1] = new AttrType (AttrType.attrInteger);
+	    Stypes[2] = new AttrType (AttrType.attrString);
+
+	    //SOS // Max Size of String is 5 chars
+	    short [] Ssizes = new short [1];
+	    Ssizes[0] = 10; //first elt. is 30
+	    
+	    Tuple t = new Tuple();
+	    boolean status = true;
+		try {
+	      t.setHdr((short) 3,Stypes, Ssizes);
+	    }
+	    catch (Exception e) {
+	      System.err.println("*** error in Tuple.setHdr() ***");
+	      status = FAIL;
+	      e.printStackTrace();
+	    }
+	    
+	    int size = t.size();
+	    
+	    // inserting the tuple into file "sailors"
+	    RID             rid;
+	    Heapfile        f = null;
+	    try {
+	      f = new Heapfile("xml.in");
+	    }
+	    catch (Exception e) {
+	      System.err.println("*** error in Heapfile constructor ***");
+	      status = FAIL;
+	      e.printStackTrace();
+	    }
+	    
+	    t = new Tuple(size);
+	    try {
+	      t.setHdr((short) 3, Stypes, Ssizes);
+	    }
+	    catch (Exception e) {
+	      System.err.println("*** error in Tuple.setHdr() ***");
+	      status = FAIL;
+	      e.printStackTrace();
+	    }
+	    
+	    List<NodeTuple> nodes = null;
+		try {
+			nodes = global.ParseXML.parse(path);
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+	    
+	    
+	    for (NodeTuple node : nodes) {
+	      try {
+		t.setIntervalFld(1, node.getNodeIntLabel());
+		t.setIntFld(2, node.getLevel());
+		t.setStrFld(3, node.getName());
+		
+	      }
+	      catch (Exception e) {
+		System.err.println("*** Heapfile error in Tuple.setStrFld() ***");
+		status = FAIL;
+		e.printStackTrace();
+	      }
+	      
+	      try {
+		rid = f.insertRecord(t.returnTupleByteArray());
+	      }
+	      catch (Exception e) {
+		System.err.println("*** error in Heapfile.insertRecord() ***");
+		status = FAIL;
+		e.printStackTrace();
+	      }      
+	    }
+	    if (status != OK) {
+	      //bail out
+	      System.err.println ("*** Error creating relation for sailors");
+	      Runtime.getRuntime().exit(1);
+	    }  
+	  }
+	  
   public boolean runTests() {
     
     Disclaimer();
-    Query1();
-    
-    Query2();
-    Query3();
-    
-   
-    Query4();
-    Query5();
-    Query6();
-    
+    QueryPC();
     
     System.out.print ("Finished joins testing"+"\n");
    
     
     return true;
   }
+  
+  
+  private void QueryXML_CondExpr(CondExpr[] expr) {
+
+	    expr[0].next  = null;
+	    expr[0].op    = new AttrOperator(AttrOperator.aopGT);
+	    expr[0].type1 = new AttrType(AttrType.attrSymbol);
+	    expr[0].type2 = new AttrType(AttrType.attrSymbol);
+	    expr[0].operand1.symbol = new FldSpec (new RelSpec(RelSpec.outer),1);
+	    expr[0].operand2.symbol = new FldSpec (new RelSpec(RelSpec.innerRel),1);
+	    expr[1] = null;
+	    
+	 
+	  }
 
   private void Query1_CondExpr(CondExpr[] expr) {
 
@@ -496,6 +616,8 @@ class JoinsDriver implements GlobalConst {
     
     expr[0].operand2.symbol = new FldSpec (new RelSpec(RelSpec.innerRel),1);
 
+    
+    
     expr[1].next  = null;
     expr[1].op    = new AttrOperator(AttrOperator.aopGT);
     expr[1].type1 = new AttrType(AttrType.attrSymbol);
@@ -525,7 +647,877 @@ class JoinsDriver implements GlobalConst {
  
     expr2[2] = null;
   }
+  
+  
+  public void QueryPC() {
+	  
+		  System.out.print("**********************QueryXML strating *********************\n");
+		  
+		  //read the input file
+		  
+		  File file = new File("/home/waykop/Desktop/DBMSI-510-Project/input.txt"); 
+		  boolean status = OK;
+		     
+		  
+		  
+		  
+		  String st; 
+		  try {
+			  BufferedReader br = new BufferedReader(new FileReader(file)); 
+			  st = br.readLine();
+			  int nodesCount = Integer.valueOf(st);
+			  
+			  HashMap<Integer,String > map= new HashMap<Integer,String>();
+			  
+			  for(int i=0;i<nodesCount;i++) {
+				  st = br.readLine();
+				  map.put(i+1, st);
+			  }
+			  
+			  NestedLoopsJoins inl = null;
+			  List<String> conditions= new ArrayList<String>();
+			  while ((st = br.readLine()) != null) {
+				  conditions.add(st);
+			  }
+			  int dynamicCount=-1;
+			  HashMap<Integer,String> dynamic= new HashMap<Integer,String>();
+			   
+			  // Creating Index on heapfile
+			  AttrType [] Stypes = {
+					  new AttrType(AttrType.attrInterval), 
+					  new AttrType(AttrType.attrInteger),
+					  new AttrType(AttrType.attrString)
+					    };
 
+					    short []   Ssizes = new short[1];
+					    Ssizes[0] = 10;
+					    			 
+			  //_______________________________________________________________
+			  //*******************create an scan on the heapfile**************
+			  //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+			  // create a tuple of appropriate size
+			  
+			  Tuple tt = new Tuple();
+			  try {
+			    tt.setHdr((short) 3, Stypes, Ssizes);
+			  }
+			  catch (Exception e) {
+			    status = FAIL;
+			    e.printStackTrace();
+			  }
+
+			  int sizett = tt.size();
+			  tt = new Tuple(sizett);
+			  try {
+			    tt.setHdr((short) 3, Stypes, Ssizes);
+			  }
+			  catch (Exception e) {
+			    status = FAIL;
+			    e.printStackTrace();
+			  }
+			  Heapfile        f = null;
+			  try {
+			    f = new Heapfile("xml.in");
+			  }
+			  catch (Exception e) {
+			    status = FAIL;
+			    e.printStackTrace();
+			  }
+			 
+			  Scan scan = null;
+			 
+			  try {
+			    scan = new Scan(f);
+			  }
+			  catch (Exception e) {
+			    status = FAIL;
+			    e.printStackTrace();
+			    Runtime.getRuntime().exit(1);
+			  }
+
+			  // create the index file
+			  BTreeFile btf = null;
+			  try {
+			    btf = new BTreeFile("BTreeIndexForNLJ", AttrType.attrString, 8, 1);
+			  }
+			  catch (Exception e) {
+			    status = FAIL;
+			    e.printStackTrace();
+			    Runtime.getRuntime().exit(1);
+			  }
+			 
+			  RID rid = new RID();
+			  String key =null;
+			  Tuple temp = null;
+			 
+			  try {
+			    temp = scan.getNext(rid);
+			  }
+			  catch (Exception e) {
+			    status = FAIL;
+			    e.printStackTrace();
+			  }
+			  while ( temp != null) {
+			    tt.tupleCopy(temp);
+			   
+			    try {
+			    key = tt.getStrFld(3);
+			    }
+			    catch (Exception e) {
+			    status = FAIL;
+			    e.printStackTrace();
+			    }
+			   
+			    try {
+			    btf.insert(new StringKey(key.trim()), rid);
+			    }
+			    catch (Exception e) {
+			    status = FAIL;
+			    e.printStackTrace();
+			    }
+
+			    try {
+			    temp = scan.getNext(rid);
+			    }
+			    catch (Exception e) {
+			    status = FAIL;
+			    e.printStackTrace();
+			    }
+			  }
+			 
+			  // close the file scan
+			  scan.closescan();
+		//--------------------------------------Query Plan Index-----------------------------------------	 
+			  // Uncomment QueryPlanExecutorIndex() to run Query Plan index
+			/*
+			 * Query Plan that uses deep tree travsersal using Indexs B+ tree indexes are
+			 * created on Nodename field We can use indexScan on this B+ tree indexs. And
+			 * QueryIndex uses index
+			 */
+			  
+			// QueryPlanExecutorIndex(map, conditions, inl,0,"xml.in",dynamicCount,dynamic,"BTreeIndexForNLJ");
+		
+		//-----------------------------------------Query Plan 1------------------------------------------
+			  // Uncomment recursive() to run query plan 1
+			  /* Query plan with left-deep tree traversal: This query will be 
+			   * fast for data having large number of duplicate leaf values
+			   */	  
+			  //Query 1 executing..
+			  System.out.println("Query plan 1 executing....");
+			  
+			  System.out.println(SystemDefs.JavabaseBM.pcounter);		    
+		//	  QueryPlanExecutor(map, conditions, inl,0,"xml.in",dynamicCount,dynamic);
+			  System.out.println("for left:" + SystemDefs.JavabaseBM.pcounter);		    
+			
+		//----------------------------------------Query Plan 2---------------------------------------------
+			  // Uncomment QueryPlanExecutor() to run query plan 2
+			  
+			  
+			  /* Query plan with right-deep tree traversal: This query will be 
+			   * fast for data having large number of duplicate leaf values.Also
+			   * it depends on the data whether the data distribution is left-skewed or right skewed.
+			   */	    
+			  //Query plan 2 executing...
+			  System.out.println("Query plan 2 executing....");
+				 			  
+			  List<String> conditionsReverse= new ArrayList<String>();
+				 
+			  for(int i=conditions.size()-1;i>=0;i--) {
+				  conditionsReverse.add(conditions.get(i));
+				  }
+			 
+			//  QueryPlanExecutor(map, conditionsReverse, inl,0,"xml.in",dynamicCount,dynamic);			  
+			  System.out.println("for right:"+SystemDefs.JavabaseBM.pcounter);	 
+			
+			//----------------------------------Query Plan 3--------------------------------------------------
+			  // Uncomment QueryPlanExecutor() to run query plan 3
+			  
+			  /* Query plan with right-deep tree traversal: This query will be 
+			   * fast for data having large number of duplicate leaf values.Also
+			   * it depends on the data whether the data distribution is left-skewed or right skewed.
+			   */	    
+			  //query plan 3
+			  System.out.println("Query plan 3 executing....");				
+			  
+			  String[][] conditionMatrix= new String[conditions.size()*2][conditions.size()*2];
+			  for(int z=0;z<conditions.size();z++) {
+				  String[] splited=conditions.get(z).split("\\s+");
+				  int node1=Integer.valueOf(splited[0]);
+				  int node2=Integer.valueOf(splited[1]);
+				  conditionMatrix[node1-1][node2-1] = splited[2];
+			  }
+			  
+			  List<String> conditionsBush= new ArrayList<String>();
+			  int root = Integer.valueOf(conditions.get(0).split("\\s+")[0]);
+			 int counter = 0;
+			 Queue<Integer> condQ = new LinkedList<Integer>();
+			 condQ.offer(root-1);
+			 HashMap<Integer, Boolean> visited = new HashMap<Integer, Boolean>();
+			 while (!condQ.isEmpty()) {
+				 int pop = condQ.poll();
+				 if (visited.containsKey(pop)) {
+					 continue;
+				 }
+					 
+				 visited.put(pop, true);
+				 for (int k = 0; k < conditions.size()*2; k++) {
+					 if (conditionMatrix[pop][k] != null) {
+						 String ipCondition = Integer.toString(pop+1) + " " + Integer.toString(k+1) + " "
+							+ conditionMatrix[pop][k];
+						 conditionsBush.add(ipCondition);
+						 condQ.offer(k);
+					 }
+				 }
+				 
+			 }
+			 	
+			 for(int i=0;i<conditionsReverse.size();i++) {
+				  System.out.println("bush:"+conditionsBush.get(i));
+			  }	
+			 QueryPlanExecutor(map, conditionsBush, inl,0,"xml.in",dynamicCount,dynamic);
+			  System.out.println("For bush:"+SystemDefs.JavabaseBM.pcounter);		    
+	  
+		     }catch( Exception e) {
+			  e.printStackTrace();
+		  }
+  }
+  
+  
+  public void  QueryPlanExecutor(HashMap<Integer,String > map, List<String> conditions,Iterator it ,int conditionCount, String heapFileName,int dynamicCount,HashMap<Integer,String> dynamic ) {
+	   	
+	  if(conditionCount >= conditions.size()) {
+		  NestedLoopsJoins nlj = (NestedLoopsJoins)it;
+		  int sizeofTuple = nlj.getFinalTupleSize();
+		  
+		  AttrType []  outputtype = new AttrType[sizeofTuple];
+	    	
+		  for(int i=0;i< sizeofTuple;i=i+3) {
+			  outputtype[i]= new AttrType(AttrType.attrInterval);
+			  outputtype[i+1]=new AttrType(AttrType.attrInteger);
+			  outputtype[i+2]=new AttrType(AttrType.attrString);
+	    		
+		  	}
+		
+		  Tuple t;
+		    t = null;
+		    try {
+		      while ((t = nlj.get_next()) != null) {
+		        t.print(outputtype);
+		      }
+		    }
+		    catch (Exception e) {
+		      System.err.println (""+e);
+		      e.printStackTrace();
+		      Runtime.getRuntime().exit(1);
+		    }
+
+		    System.out.println ("\n"); 
+		    try {
+		      nlj.close();
+		    }
+		    catch (Exception e) {
+		    
+		      e.printStackTrace();
+		    }
+		    
+		  
+		  return ;
+	  }
+	  
+//------------	  
+	  String[] splited=conditions.get(conditionCount).split("\\s+");
+	  
+	 // if(dynamic.get(map.get(key)))
+	  int index=0;
+	  if(!dynamic.containsValue(map.get(Integer.valueOf(splited[0])))){
+		  dynamic.put(++dynamicCount, map.get(Integer.valueOf(splited[0])));
+	  }else {
+		  for(Map.Entry<Integer,String> e : dynamic.entrySet()) {
+			  if(e.getValue().equals(map.get(Integer.valueOf(splited[0]))))
+			  	index = e.getKey();
+		  }
+	  }	  
+		  
+	  if(!dynamic.containsValue(map.get(Integer.valueOf(splited[1])))){
+			  dynamic.put(++dynamicCount, map.get(Integer.valueOf(splited[1])));
+	  }else {
+				  for(Map.Entry<Integer,String> e : dynamic.entrySet()) {
+					  if(e.getValue().equals(map.get(Integer.valueOf(splited[1]))))
+					  	index = e.getKey();
+				  }
+			  }	  
+				
+	  //parsing for condition expressions
+	  CondExpr [] leftFilter  = new CondExpr[2];
+      leftFilter[0] = new CondExpr();
+      
+      leftFilter[0].next  = null;
+      leftFilter[0].op    = new AttrOperator(AttrOperator.aopEQ);
+      leftFilter[0].type1 = new AttrType(AttrType.attrSymbol);
+      leftFilter[0].type2 = new AttrType(AttrType.attrString);
+      leftFilter[0].operand1.symbol = new FldSpec (new RelSpec(RelSpec.outer),3);
+      leftFilter[0].operand2.string = map.get(Integer.valueOf(splited[0]));
+      
+      leftFilter[1] = null;
+      
+      CondExpr [] rightFilter = new CondExpr[2];
+      rightFilter[0] = new CondExpr();
+      
+      rightFilter[0].next  = null;
+      rightFilter[0].op    = new AttrOperator(AttrOperator.aopEQ);
+      rightFilter[0].type1 = new AttrType(AttrType.attrSymbol);
+      rightFilter[0].type2 = new AttrType(AttrType.attrString);
+      rightFilter[0].operand1.symbol = new FldSpec (new RelSpec(RelSpec.outer),3);
+      rightFilter[0].operand2.string = map.get(Integer.valueOf(splited[1]));
+      rightFilter[1] = null;
+
+      String relationship= splited[2];
+      
+      CondExpr [] outFilter = new CondExpr[3];
+      outFilter[0] = new CondExpr();
+      outFilter[1] = new CondExpr();
+      
+      
+      outFilter[0].next  = null;
+      outFilter[0].op    = new AttrOperator(AttrOperator.aopGT);
+      outFilter[0].type1 = new AttrType(AttrType.attrSymbol);
+      outFilter[0].type2 = new AttrType(AttrType.attrSymbol);
+      outFilter[0].operand1.symbol = new FldSpec (new RelSpec(RelSpec.outer),index*3+1);
+      outFilter[0].operand2.symbol = new FldSpec (new RelSpec(RelSpec.innerRel),1);
+      outFilter[0].flag=1;
+     // outFilter[1] = null;
+
+      if(relationship.equals("PC")) {
+      	      
+		      outFilter[1].next  = null;
+		      outFilter[1].op    = new AttrOperator(AttrOperator.aopLT);
+		      outFilter[1].type1 = new AttrType(AttrType.attrSymbol);
+		      outFilter[1].type2 = new AttrType(AttrType.attrSymbol);
+		      outFilter[1].operand1.symbol = new FldSpec (new RelSpec(RelSpec.outer),index*3+2);
+	
+		      outFilter[1].operand2.symbol = new FldSpec (new RelSpec(RelSpec.innerRel),2);
+		      outFilter[1].flag=1;
+		      outFilter[2] = null;
+      }
+      else if(relationship.equals("AD"))
+      {	    	  
+    	  outFilter[1] = null;
+    	  outFilter[2] = null;					       
+      }
+
+      AttrType [] ltypes = new AttrType[(conditionCount+1)*3];
+      for(int j=0;j<(conditionCount+1)*3;j=j+3) {
+	ltypes[j] = new AttrType(AttrType.attrInterval);
+	ltypes[j+1]=new AttrType(AttrType.attrInteger); 
+	ltypes[j+2]=new AttrType(AttrType.attrString);
+      }
+    
+      short []   lsizes = new short[(conditionCount+1)];
+      for(int j=0;j<lsizes.length;j++)
+    	  lsizes[j]=10;
+         
+      AttrType [] rtypes = {
+	new AttrType(AttrType.attrInterval), 
+	new AttrType(AttrType.attrInteger), 
+	new AttrType(AttrType.attrString), 
+      };
+      
+      short  []  rsizes = new short[1] ;
+      rsizes[0] = 10;
+    
+      if(it==null) {
+    	  
+    	  FldSpec [] lprojection = {
+  				new FldSpec(new RelSpec(RelSpec.outer), 1),
+  				new FldSpec(new RelSpec(RelSpec.outer), 2),
+  			    new FldSpec(new RelSpec(RelSpec.outer), 3),
+
+  			      };
+
+		      boolean status=true;
+			try {
+			it  = new FileScan(heapFileName, ltypes, lsizes, 
+					   (short)3, (short)3,
+					   lprojection, leftFilter);
+		      }
+		      catch (Exception e) {
+			status = FAIL;
+			System.err.println (""+e);
+			e.printStackTrace();
+		      }
+		      
+		      if (status != OK) {
+			//bail out
+			
+			System.err.println ("*** Error setting up scan for sailors");
+			Runtime.getRuntime().exit(1);
+		      }
+		
+      }
+      //from 2nd condition---
+		  
+    	  int fieldCounts = (conditionCount +2)*3;
+    	  FldSpec []  proj1 = new FldSpec[fieldCounts];
+    		
+    	  //for outer relations
+    	  for(int i=0;i< fieldCounts-3;i=i+3) {
+    		  proj1[i]=new FldSpec(new RelSpec(RelSpec.outer), 1+i);
+    		  proj1[i+1]=new FldSpec(new RelSpec(RelSpec.outer), 2+i);
+    		  proj1[i+2]=new FldSpec(new RelSpec(RelSpec.outer), 3+i);
+ 	     }
+   	  
+    	  //for inner relations
+    	  proj1[fieldCounts-3]=new FldSpec(new RelSpec(RelSpec.innerRel), 1);
+		  proj1[fieldCounts-2]=new FldSpec(new RelSpec(RelSpec.innerRel), 2);
+		  proj1[fieldCounts-1]=new FldSpec(new RelSpec(RelSpec.innerRel), 3);
+	    	
+		   NestedLoopsJoins inl = null;
+		      try {
+			inl = new NestedLoopsJoins (ltypes, ltypes.length, lsizes,
+						    rtypes, 3, rsizes,
+						    10,
+						  it, heapFileName,
+						    outFilter, rightFilter, proj1, fieldCounts);
+		      }
+		      catch (Exception e) {
+			System.err.println ("*** Error preparing for nested_loop_join");
+			System.err.println (""+e);
+			e.printStackTrace();
+			Runtime.getRuntime().exit(1);
+		      }
+		
+		      QueryPlanExecutor(map, conditions, inl, conditionCount+1, heapFileName, dynamicCount, dynamic);
+    	 	  
+  }
+  
+  public void  QueryPlanExecutorIndex(HashMap<Integer,String > map, List<String> conditions,Iterator it ,int conditionCount, String heapFileName,int dynamicCount,HashMap<Integer,String> dynamic, String IndexName ) {
+	 	 	
+	  if(conditionCount >= conditions.size()) {
+		  NestedLoopsJoins nlj = (NestedLoopsJoins)it;
+		  int sizeofTuple = nlj.getFinalTupleSize();
+		  
+		  
+		  AttrType []  outputtype = new AttrType[sizeofTuple];
+	    	
+		  for(int i=0;i< sizeofTuple;i=i+3) {
+			  outputtype[i]= new AttrType(AttrType.attrInterval);
+			  outputtype[i+1]=new AttrType(AttrType.attrInteger);
+			  outputtype[i+2]=new AttrType(AttrType.attrString);
+		  	}
+		
+		  Tuple t;
+		    t = null;
+		    try {
+		      while ((t = nlj.get_next()) != null) {
+		        t.print(outputtype);
+		      }
+		    }
+		    catch (Exception e) {
+		      System.err.println (""+e);
+		      e.printStackTrace();
+		      Runtime.getRuntime().exit(1);
+		    }
+
+		    System.out.println ("\n"); 
+		    try {
+		      nlj.close();
+		    }
+		    catch (Exception e) {
+		    
+		      e.printStackTrace();
+		    }
+		    
+		  
+		  return ;
+	  }
+	  
+//------------	  
+	  String[] splited=conditions.get(conditionCount).split("\\s+");
+	  
+	 // if(dynamic.get(map.get(key)))
+	  int index=0;
+	  if(!dynamic.containsValue(map.get(Integer.valueOf(splited[0])))){
+		  dynamic.put(++dynamicCount, map.get(Integer.valueOf(splited[0])));
+	  }else {
+		  for(Map.Entry<Integer,String> e : dynamic.entrySet()) {
+			  if(e.getValue().equals(map.get(Integer.valueOf(splited[0]))))
+			  	index = e.getKey();
+		  }
+	  }	  
+		  
+	  if(!dynamic.containsValue(map.get(Integer.valueOf(splited[1])))){
+			  dynamic.put(++dynamicCount, map.get(Integer.valueOf(splited[1])));
+	  }else {
+				  for(Map.Entry<Integer,String> e : dynamic.entrySet()) {
+					  if(e.getValue().equals(map.get(Integer.valueOf(splited[1]))))
+					  	index = e.getKey();
+				  }
+			  }	  
+				
+	  //parsing for condition expressions
+	  CondExpr [] leftFilter  = new CondExpr[2];
+      leftFilter[0] = new CondExpr();
+      
+      leftFilter[0].next  = null;
+      leftFilter[0].op    = new AttrOperator(AttrOperator.aopEQ);
+      leftFilter[0].type1 = new AttrType(AttrType.attrSymbol);
+      leftFilter[0].type2 = new AttrType(AttrType.attrString);
+      leftFilter[0].operand1.symbol = new FldSpec (new RelSpec(RelSpec.outer),3);
+      leftFilter[0].operand2.string = map.get(Integer.valueOf(splited[0]));
+      
+      leftFilter[1] = null;
+      
+      CondExpr [] rightFilter = new CondExpr[2];
+      rightFilter[0] = new CondExpr();
+      
+      rightFilter[0].next  = null;
+      rightFilter[0].op    = new AttrOperator(AttrOperator.aopEQ);
+      rightFilter[0].type1 = new AttrType(AttrType.attrSymbol);
+      rightFilter[0].type2 = new AttrType(AttrType.attrString);
+      rightFilter[0].operand1.symbol = new FldSpec (new RelSpec(RelSpec.outer),3);
+      rightFilter[0].operand2.string = map.get(Integer.valueOf(splited[1]));
+      rightFilter[1] = null;
+  
+      String relationship= splited[2];
+      
+      CondExpr [] outFilter = new CondExpr[3];
+      outFilter[0] = new CondExpr();
+      outFilter[1] = new CondExpr();
+      
+      outFilter[0].next  = null;
+      outFilter[0].op    = new AttrOperator(AttrOperator.aopGT);
+      outFilter[0].type1 = new AttrType(AttrType.attrSymbol);
+      outFilter[0].type2 = new AttrType(AttrType.attrSymbol);
+      outFilter[0].operand1.symbol = new FldSpec (new RelSpec(RelSpec.outer),index*3+1);
+      outFilter[0].operand2.symbol = new FldSpec (new RelSpec(RelSpec.innerRel),1);
+      outFilter[0].flag=1;
+     // outFilter[1] = null;
+     
+      if(relationship.equals("PC")) {
+      	      
+		      outFilter[1].next  = null;
+		      outFilter[1].op    = new AttrOperator(AttrOperator.aopLT);
+		      outFilter[1].type1 = new AttrType(AttrType.attrSymbol);
+		      outFilter[1].type2 = new AttrType(AttrType.attrSymbol);
+		      outFilter[1].operand1.symbol = new FldSpec (new RelSpec(RelSpec.outer),index*3+2);
+	
+		      outFilter[1].operand2.symbol = new FldSpec (new RelSpec(RelSpec.innerRel),2);
+		      outFilter[1].flag=1;
+		      outFilter[2] = null;
+      }
+      else if(relationship.equals("AD"))
+      {	    	  
+    	  outFilter[1] = null;
+    	  outFilter[2] = null;					       
+      }
+	 
+
+      AttrType [] ltypes = new AttrType[(conditionCount+1)*3];
+      for(int j=0;j<(conditionCount+1)*3;j=j+3) {
+	ltypes[j] = new AttrType(AttrType.attrInterval);
+	ltypes[j+1]=new AttrType(AttrType.attrInteger); 
+	ltypes[j+2]=new AttrType(AttrType.attrString);
+      }
+    
+      short []   lsizes = new short[(conditionCount+1)];
+      for(int j=0;j<lsizes.length;j++)
+    	  lsizes[j]=10;
+      
+      
+      AttrType [] rtypes = {
+	new AttrType(AttrType.attrInterval), 
+	new AttrType(AttrType.attrInteger), 
+	new AttrType(AttrType.attrString), 
+      };
+      
+      short  []  rsizes = new short[1] ;
+      rsizes[0] = 10;
+
+      if(it==null) {
+    	  
+    	  FldSpec [] lprojection = {
+  				new FldSpec(new RelSpec(RelSpec.outer), 1),
+  				new FldSpec(new RelSpec(RelSpec.outer), 2),
+  			    new FldSpec(new RelSpec(RelSpec.outer), 3),
+
+  			      };
+
+		      IndexType b_index = new IndexType (IndexType.B_Index);
+		      try {
+		        it = new IndexScan ( b_index, heapFileName,
+		                   IndexName, ltypes, lsizes, 3, 3,
+		                   lprojection, leftFilter, 3, false);
+		      }
+		     
+		      catch (Exception e) {
+		        System.err.println ("*** Error creating scan for Index scan");
+		        System.err.println (""+e);
+		        Runtime.getRuntime().exit(1);
+		      }	
+		
+      }
+      //from 2nd condition---
+		  
+    	  int fieldCounts = (conditionCount +2)*3;
+    	  FldSpec []  proj1 = new FldSpec[fieldCounts];
+    		
+    	  //for outer relations
+    	  for(int i=0;i< fieldCounts-3;i=i+3) {
+    		  proj1[i]=new FldSpec(new RelSpec(RelSpec.outer), 1+i);
+    		  proj1[i+1]=new FldSpec(new RelSpec(RelSpec.outer), 2+i);
+    		  proj1[i+2]=new FldSpec(new RelSpec(RelSpec.outer), 3+i);
+ 	     }
+    	  
+    	  //for inner relations
+    	  proj1[fieldCounts-3]=new FldSpec(new RelSpec(RelSpec.innerRel), 1);
+		  proj1[fieldCounts-2]=new FldSpec(new RelSpec(RelSpec.innerRel), 2);
+		  proj1[fieldCounts-1]=new FldSpec(new RelSpec(RelSpec.innerRel), 3);
+	    	
+		
+    	
+		   NestedLoopsJoins inl = null;
+		      try {
+			inl = new NestedLoopsJoins (ltypes, ltypes.length, lsizes,
+						    rtypes, 3, rsizes,
+						    10,
+						  it, heapFileName,
+						    outFilter, rightFilter, proj1, fieldCounts);
+		      }
+		      catch (Exception e) {
+			System.err.println ("*** Error preparing for nested_loop_join");
+			System.err.println (""+e);
+			e.printStackTrace();
+			Runtime.getRuntime().exit(1);
+		      }
+		
+		      QueryPlanExecutorIndex(map, conditions, inl, conditionCount+1, heapFileName, dynamicCount, dynamic,IndexName);
+    	 	  
+  }
+		 
+  
+
+  public void QueryXML(){ 
+	    
+	  System.out.print("**********************QueryXML strating *********************\n");
+	  
+	  //read the input file
+	  
+	  File file = new File("/Users/sidmadan/Documents/cse510/input.txt"); 
+	  
+	    
+	  
+      boolean status = OK;
+      
+      CondExpr [] leftFilter  = new CondExpr[2];
+      leftFilter[0] = new CondExpr();
+      
+      leftFilter[0].next  = null;
+      leftFilter[0].op    = new AttrOperator(AttrOperator.aopEQ);
+      leftFilter[0].type1 = new AttrType(AttrType.attrSymbol);
+      leftFilter[0].type2 = new AttrType(AttrType.attrString);
+      leftFilter[0].operand1.symbol = new FldSpec (new RelSpec(RelSpec.outer),3);
+      leftFilter[0].operand2.string = "stud";
+      
+      leftFilter[1] = null;
+      
+      CondExpr [] rightFilter = new CondExpr[2];
+      rightFilter[0] = new CondExpr();
+      
+      rightFilter[0].next  = null;
+      rightFilter[0].op    = new AttrOperator(AttrOperator.aopEQ);
+      rightFilter[0].type1 = new AttrType(AttrType.attrSymbol);
+      rightFilter[0].type2 = new AttrType(AttrType.attrString);
+      rightFilter[0].operand1.symbol = new FldSpec (new RelSpec(RelSpec.outer),3);
+      rightFilter[0].operand2.string = "last";
+      rightFilter[1] = null;
+            
+      CondExpr [] outFilter = new CondExpr[2];
+      outFilter[0] = new CondExpr();
+      
+      QueryXML_CondExpr(outFilter);
+      Tuple t = new Tuple();
+      t = null;
+      
+      AttrType [] Stypes = {
+	new AttrType(AttrType.attrInterval),  
+	new AttrType(AttrType.attrInteger), 
+	new AttrType(AttrType.attrString)
+      };
+    
+      short []   Ssizes = new short[1];
+      Ssizes[0] = 10;
+      
+      
+      AttrType [] Rtypes = {
+	new AttrType(AttrType.attrInterval), 
+	new AttrType(AttrType.attrInteger), 
+	new AttrType(AttrType.attrString), 
+      };
+      
+      short  []  Rsizes = new short[1] ;
+      Rsizes[0] = 10;
+      
+      /*AttrType [] Btypes = {
+	new AttrType(AttrType.attrInteger), 
+	new AttrType(AttrType.attrString), 
+	new AttrType(AttrType.attrString), 
+      };
+      
+      short  []  Bsizes = new short[2];
+      Bsizes[0] =30;
+      Bsizes[1] =20;
+      
+      
+      AttrType [] Jtypes = {
+	new AttrType(AttrType.attrString), 
+	new AttrType(AttrType.attrInteger), 
+      };
+      
+      short  []  Jsizes = new short[1];
+      Jsizes[0] = 30;
+      AttrType [] JJtype = {
+	new AttrType(AttrType.attrString), 
+      };
+      
+      short [] JJsize = new short[1];
+      JJsize[0] = 30; 
+      
+      */
+      
+      FldSpec []  proj1 = {
+    			new FldSpec(new RelSpec(RelSpec.outer), 1),
+    			new FldSpec(new RelSpec(RelSpec.outer), 2),
+    		    new FldSpec(new RelSpec(RelSpec.outer), 3),
+    		    new FldSpec(new RelSpec(RelSpec.innerRel), 1),
+    		    new FldSpec(new RelSpec(RelSpec.innerRel), 2),
+    		    new FldSpec(new RelSpec(RelSpec.innerRel), 3)
+      }; // S.sname, R.bid
+      
+      /*FldSpec [] proj2  = {
+	new FldSpec(new RelSpec(RelSpec.outer), 1)
+      };
+      */
+      FldSpec [] Sprojection = {
+	new FldSpec(new RelSpec(RelSpec.outer), 1),
+	new FldSpec(new RelSpec(RelSpec.outer), 2),
+    new FldSpec(new RelSpec(RelSpec.outer), 3),
+
+      };
+      
+      AttrType [] JJtype = {
+    		  new AttrType(AttrType.attrInterval),
+    		  new AttrType(AttrType.attrInteger),
+    			new AttrType(AttrType.attrString),
+
+      		  new AttrType(AttrType.attrInterval),
+      		  new AttrType(AttrType.attrInteger),
+      			new AttrType(AttrType.attrString),
+      			
+    		      };
+      
+      FileScan am = null;
+      try {
+	am  = new FileScan("xml.in", Stypes, Ssizes, 
+			   (short)3, (short)3,
+			   Sprojection, leftFilter);
+      }
+      catch (Exception e) {
+	status = FAIL;
+	System.err.println (""+e);
+	e.printStackTrace();
+      }
+      
+      if (status != OK) {
+	//bail out
+	
+	System.err.println ("*** Error setting up scan for sailors");
+	Runtime.getRuntime().exit(1);
+      }
+      
+      NestedLoopsJoins inl = null;
+      try {
+	inl = new NestedLoopsJoins (Stypes, 3, Ssizes,
+				    Rtypes, 3, Rsizes,
+				    10,
+				  am, "xml.in",
+				    outFilter, rightFilter, proj1, 6);
+      }
+      catch (Exception e) {
+	System.err.println ("*** Error preparing for nested_loop_join");
+	System.err.println (""+e);
+	e.printStackTrace();
+	Runtime.getRuntime().exit(1);
+      }
+     
+   //   System.out.print( "After nested loop join S.sid|><|R.sid.\n");
+	
+    /*  NestedLoopsJoins nlj = null;
+      try {
+	nlj = new NestedLoopsJoins (Jtypes, 2, Jsizes,
+				    Btypes, 3, Bsizes,
+				    10,
+				    inl, "boats.in",
+				    outFilter2, null, proj2, 1);
+      }
+      catch (Exception e) {
+	System.err.println ("*** Error preparing for nested_loop_join");
+	System.err.println (""+e);
+	e.printStackTrace();
+	Runtime.getRuntime().exit(1);
+      }
+      
+      System.out.print( "After nested loop join R.bid|><|B.bid AND B.color=red.\n");
+      
+      TupleOrder ascending = new TupleOrder(TupleOrder.Ascending);
+      Sort sort_names = null;
+      try {
+	sort_names = new Sort (JJtype,(short)1, JJsize,
+			       (iterator.Iterator) nlj, 1, ascending, JJsize[0], 10);
+      }
+      catch (Exception e) {
+	System.err.println ("*** Error preparing for sorting");
+	System.err.println (""+e);
+	Runtime.getRuntime().exit(1);
+      }
+      
+      
+      System.out.print( "After sorting the output tuples.\n");
+   
+    */  
+      //QueryCheck qcheck6 = new QueryCheck(6);
+      
+      try {
+	while ((t =inl.get_next()) !=null) {
+	  t.print(JJtype);
+	  //qcheck6.Check(t);
+	}
+      }catch (Exception e) {
+	System.err.println ("*** Error preparing for get_next tuple");
+	e.printStackTrace();
+	System.err.println (""+e);
+	Runtime.getRuntime().exit(1);
+      }
+      
+     // qcheck6.report(6);
+      
+      System.out.println ("\n"); 
+      try {
+	inl.close();
+      }
+      catch (Exception e) {
+	status = FAIL;
+	e.printStackTrace();
+      }
+      
+      if (status != OK) {
+	//bail out
+	
+	Runtime.getRuntime().exit(1);
+      }
+  }
+
+	      
+	  
   public void Query1() {
     
     System.out.print("**********************Query1 strating *********************\n");
@@ -625,6 +1617,10 @@ class JoinsDriver implements GlobalConst {
     jtype[0] = new AttrType (AttrType.attrString);
     jtype[1] = new AttrType (AttrType.attrString);
  
+    
+    
+    
+    
     TupleOrder ascending = new TupleOrder(TupleOrder.Ascending);
     SortMerge sm = null;
     try {
@@ -1692,7 +2688,10 @@ public class JoinTest
     //SystemDefs global = new SystemDefs("bingjiedb", 100, 70, null);
     //JavabaseDB.openDB("/tmp/nwangdb", 5000);
 
-    JoinsDriver jjoin = new JoinsDriver();
+    String path = "/home/waykop/Desktop/DBMSI-510-Project/xml_sample_data.xml";
+    //String path = "/Users/sidmadan/Documents/cse510/xml_sample_data1.xml";
+
+    JoinsDriver jjoin = new JoinsDriver(path);
 
     sortstatus = jjoin.runTests();
     if (sortstatus != true) {

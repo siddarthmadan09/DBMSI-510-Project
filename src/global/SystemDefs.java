@@ -93,4 +93,23 @@ public class SystemDefs {
 	}
       }
     }
+  
+  
+    /*
+     * Using existing Buffer Manager instance, recreate the same 
+     * Buffer Manager with a new buffer size and/or new page replacement
+     * policy. If replacement policy is empty then previous Buffer 
+     * manager replacement policy will be used.  
+     */
+    public void recreateBM(int newbufpoolsize, String replacement_policy)
+    {
+        if (replacement_policy == "") {
+            replacement_policy = JavabaseBM.getReplacerStr();
+        }
+        JavabaseBM = null;
+        //JavabaseCatalog = null;
+        JavabaseBM = new BufMgr(newbufpoolsize, replacement_policy);
+        
+        
+    }
 }

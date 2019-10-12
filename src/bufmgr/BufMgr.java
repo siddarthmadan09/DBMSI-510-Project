@@ -331,6 +331,18 @@ public class BufMgr implements GlobalConst{
   /** The replacer object, which is only used in this class. */
   private Replacer replacer;
   
+  /** String value of Page Replacement Policy */
+  private String ReplacerStr;
+  
+  
+  
+  public String getReplacerStr() {
+    return ReplacerStr;
+}
+
+public void setReplacerStr(String replacerStr) {
+    ReplacerStr = replacerStr;
+}
   
   /** Factor out the common code for the two versions of Flush 
    *
@@ -415,6 +427,7 @@ public class BufMgr implements GlobalConst{
       frmeTable = new FrameDesc[numBuffers];
       bufPool = new byte[numBuffers][MAX_SPACE];
       frmeTable = new FrameDesc[numBuffers];
+      ReplacerStr = replacerArg;
       
       for (int i=0; i<numBuffers; i++)  // initialize frameTable
 	frmeTable[i] = new FrameDesc();
@@ -572,6 +585,7 @@ public class BufMgr implements GlobalConst{
 	replacer.pin(frameNo);
 	
       }
+      pcounter.incrementBuffReadCount(frameNo);
     }
   
   /** 
@@ -817,6 +831,7 @@ public class BufMgr implements GlobalConst{
     
     try {
       SystemDefs.JavabaseDB.write_page(pageno, page);
+      pcounter.incrementDiskWriteCount();
     }
     catch (Exception e) {
       throw new BufMgrException(e,"BufMgr.java: write_page() failed");
@@ -829,6 +844,7 @@ public class BufMgr implements GlobalConst{
     
     try {
       SystemDefs.JavabaseDB.read_page(pageno, page);
+      pcounter.incrementDiskReadCount();
     }
     catch (Exception e) {
       throw new BufMgrException(e,"BufMgr.java: read_page() failed");

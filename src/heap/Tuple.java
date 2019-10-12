@@ -1,5 +1,3 @@
-/* File Tuple.java */
-
 package heap;
 
 import java.io.*;
@@ -390,8 +388,11 @@ public void setHdr (short numFlds,  AttrType types[], short strSizes[])
    case AttrType.attrString:
      incr = (short) (strSizes[strCount] +2);  //strlen in bytes = strlen +2
      strCount++;
-     break;       
- 
+     break;    
+    
+   case AttrType.attrInterval: //xml db change 
+	  incr = 8;
+	  break;
    default:
     throw new InvalidTypeException (null, "TUPLE: TUPLE_TYPE_ERROR");
    }
@@ -413,7 +414,9 @@ public void setHdr (short numFlds,  AttrType types[], short strSizes[])
    case AttrType.attrString:
      incr =(short) ( strSizes[strCount] +2);  //strlen in bytes = strlen +2
      break;
-
+   case AttrType.attrInterval: //xml db change 
+		  incr = 8;
+		  break;
    default:
     throw new InvalidTypeException (null, "TUPLE: TUPLE_TYPE_ERROR");
    }
@@ -468,39 +471,48 @@ public void setHdr (short numFlds,  AttrType types[], short strSizes[])
   int i, val;
   float fval;
   String sval;
+Intervaltype interval;
 
-  System.out.print("[");
+  System.out.print("Tuple : [");
   for (i=0; i< fldCnt-1; i++)
    {
     switch(type[i].attrType) {
 
    case AttrType.attrInteger:
-     val = Convert.getIntValue(fldOffset[i], data);
-     System.out.print(val);
+   //  val = Convert.getIntValue(fldOffset[i], data);
+    // System.out.print(val);
      break;
 
    case AttrType.attrReal:
      fval = Convert.getFloValue(fldOffset[i], data);
      System.out.print(fval);
+     System.out.print(", ");
      break;
 
    case AttrType.attrString:
      sval = Convert.getStrValue(fldOffset[i], data,fldOffset[i+1] - fldOffset[i]);
      System.out.print(sval);
+     System.out.print(" | ");
      break;
   
-   case AttrType.attrNull:
-   case AttrType.attrSymbol:
+   case AttrType.attrInterval:
+	   interval = Convert.getIntervalValue(fldOffset[i], data);
+	   System.out.print(interval);
+	   System.out.print(", ");
+	   break;
+   case AttrType.attrNull:System.out.print(", ");
+   	   break;
+   case AttrType.attrSymbol:System.out.print(", ");
      break;
    }
-   System.out.print(", ");
+   
  } 
  
  switch(type[fldCnt-1].attrType) {
 
    case AttrType.attrInteger:
-     val = Convert.getIntValue(fldOffset[i], data);
-     System.out.print(val);
+ //    val = Convert.getIntValue(fldOffset[i], data);
+  //   System.out.print(val);
      break;
 
    case AttrType.attrReal:
@@ -536,14 +548,25 @@ public void setHdr (short numFlds,  AttrType types[], short strSizes[])
    }
   
   // convert this field into intervaltype
-  private void getIntervalFld(int fldNo) {
-	  
+  public Intervaltype getIntervalFld(int fldNo) throws IOException, FieldNumberOutOfBoundException {
+	  Intervaltype val = new Intervaltype();
+      if ( (fldNo > 0) && (fldNo <= fldCnt))      
+       { 
+       val = Convert.getIntervalValue(fldOffset[fldNo -1], data);
+        return val;
+       }
+	 else 
+	     throw new FieldNumberOutOfBoundException (null, "TUPLE:TUPLE_FLDNO_OUT_OF_BOUND");  
   }
   
-  // set this field to intervaltype value
-  private void setIntervalFld(int fldNo, Intervaltype val) {
-	  
-  }
-  
+  // set this field to intervaltype value - xml db change
+  public Tuple setIntervalFld(int fldNo, Intervaltype val) throws IOException, FieldNumberOutOfBoundException  { 
+	    if ( (fldNo > 0) && (fldNo <= fldCnt))
+	     {
+			Convert.setIntervalValue (val, fldOffset[fldNo -1], data);
+			return this;
+	     }
+	    else 
+	     throw new FieldNumberOutOfBoundException (null, "TUPLE:TUPLE_FLDNO_OUT_OF_BOUND"); 
+  }  
 }
-

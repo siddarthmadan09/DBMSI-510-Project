@@ -1,5 +1,7 @@
 package index;
 import global.*;
+import intervaltree.IntervalKey;
+import intervaltree.IntervalTreeFile;
 import btree.*;
 import iterator.*;
 import java.io.*;
@@ -183,6 +185,9 @@ public class IndexUtils {
     case AttrType.attrInteger:
       if (choice == 1) return new IntegerKey(new Integer(cd.operand1.integer));
       else return new IntegerKey(new Integer(cd.operand2.integer));
+    case AttrType.attrInterval:
+        if (choice == 1) return new IntervalKey(new Intervaltype(cd.operand1.intervaltype));
+        else return new IntervalKey(new Intervaltype(cd.operand2.intervaltype));
     case AttrType.attrReal:
       /*
       // need FloatKey class in bt.java
@@ -194,5 +199,165 @@ public class IndexUtils {
     }
     
   }
+
+/**
+   * BTree_scan opens a BTree scan based on selection conditions
+   * @param selects conditions to apply
+   * @param indFile the index (BTree) file
+   * @return an instance of IndexFileScan (BTreeFileScan)
+   * @exception IOException from lower layer
+   * @exception UnknownKeyTypeException only int and string keys are supported 
+   * @exception InvalidSelectionException selection conditions (selects) not valid
+   * @exception KeyNotMatchException Keys do not match
+   * @exception UnpinPageException unpin page failed
+   * @exception PinPageException pin page failed
+   * @exception IteratorException iterator exception
+   * @exception ConstructPageException failed to construct a header page
+   */
+  public static IndexFileScan IntervalTree_scan(CondExpr[] selects, IndexFile indFile) 
+    throws IOException, 
+	   UnknownKeyTypeException, 
+	   InvalidSelectionException,
+	   KeyNotMatchException,
+	   UnpinPageException,
+	   PinPageException,
+	   IteratorException,
+	   ConstructPageException
+    {
+      IndexFileScan indScan;
+      // Working for all Tuples
+      if (selects == null || selects[0] == null) {
+	indScan = ((IntervalTreeFile)indFile).new_scan(null, null);
+	return indScan;
+      }
+      
+      
+      
+      /// Need to check for conditions
+      if (selects[1] == null) {
+	if (selects[0].type1.attrType != AttrType.attrSymbol && selects[0].type2.attrType != AttrType.attrSymbol) {
+	  throw new InvalidSelectionException("IndexUtils.java: Invalid selection condition"); 
+	}
+	
+	KeyClass key;
+	
+	// symbol = value
+	if (selects[0].op.attrOperator == AttrOperator.aopEQ) {
+	  if (selects[0].type1.attrType != AttrType.attrSymbol) {
+	    key = getValue(selects[0], selects[0].type1, 1);
+	    indScan = ((IntervalTreeFile)indFile).new_scan(key, key);
+	  }
+	  else {
+	    key = getValue(selects[0], selects[0].type2, 2);
+	    indScan = ((IntervalTreeFile)indFile).new_scan(key, key);
+	  }
+	  return indScan;
+	}
+	
+	// symbol < value or symbol <= value
+	// 0 - Before condition in indexTree
+	if (selects[0].op.attrOperator == AttrOperator.aopLT || selects[0].op.attrOperator == AttrOperator.aopLE) {
+	  if (selects[0].type1.attrType != AttrType.attrSymbol) {
+	    key = getValue(selects[0], selects[0].type1, 1);
+	    indScan = ((IntervalTreeFile)indFile).new_scan(null, key);
+	  }
+	  else {
+	    key = getValue(selects[0], selects[0].type2, 2);
+	    indScan = ((IntervalTreeFile)indFile).new_scan(null, key);
+	  }
+	  return indScan;
+	}
+	
+	// symbol > value or symbol >= value
+	// 3-  starts condition in indexTree
+	if (selects[0].op.attrOperator == AttrOperator.aopGT || selects[0].op.attrOperator == AttrOperator.aopGE) {
+	  if (selects[0].type1.attrType != AttrType.attrSymbol) {
+	    key = getValue(selects[0], selects[0].type1, 1);
+	    indScan = ((IntervalTreeFile)indFile).new_scan(key, null);
+	  }
+	  else {
+	    key = getValue(selects[0], selects[0].type2, 2);
+	    indScan = ((IntervalTreeFile)indFile).new_scan(key, null);
+	  }
+	  return indScan;
+	}
+	
+	// error if reached here
+	System.err.println("Error -- in IndexUtils.BTree_scan()");
+	return null;
+      }
+      else {
+	// selects[1] != null, must be a range query
+    	  // 7  - contains 
+	if (selects[0].type1.attrType != AttrType.attrSymbol && selects[0].type2.attrType != AttrType.attrSymbol) {
+	  throw new InvalidSelectionException("IndexUtils.java: Invalid selection condition"); 
+	}
+	if (selects[1].type1.attrType != AttrType.attrSymbol && selects[1].type2.attrType != AttrType.attrSymbol) {
+	  throw new InvalidSelectionException("IndexUtils.java: Invalid selection condition"); 
+	}
+	
+	// which symbol is higher??
+	KeyClass key1, key2;
+	AttrType type;
+	
+	if (selects[0].type1.attrType != AttrType.attrSymbol) {
+	  key1 = getValue(selects[0], selects[0].type1, 1);
+	  type = selects[0].type1;
+	}
+	else {
+	  key1 = getValue(selects[0], selects[0].type2, 2);
+	  type = selects[0].type2;
+	}
+	if (selects[1].type1.attrType != AttrType.attrSymbol) {
+	  key2 = getValue(selects[1], selects[1].type1, 1);
+	}
+	else {
+	  key2 = getValue(selects[1], selects[1].type2, 2);
+	}
+	
+	switch (type.attrType) {
+	case AttrType.attrString:
+	  if (((StringKey)key1).getKey().compareTo(((StringKey)key2).getKey()) < 0) {
+	    indScan = ((BTreeFile)indFile).new_scan(key1, key2);
+	  }
+	  else {
+	    indScan = ((BTreeFile)indFile).new_scan(key2, key1);
+	  }
+	  return indScan;
+	  
+	case AttrType.attrInteger:
+	  if (((IntegerKey)key1).getKey().intValue() < ((IntegerKey)key2).getKey().intValue()) {
+	    indScan = ((BTreeFile)indFile).new_scan(key1, key2);
+	  }
+	  else {
+	    indScan = ((BTreeFile)indFile).new_scan(key2, key1);
+	  }
+	  return indScan;
+	  
+	case AttrType.attrInterval:
+		  if (((IntervalKey)key1).getKey().getStart() < ((IntervalKey)key2).getKey().getStart()) {
+		    indScan = ((IntervalTreeFile)indFile).new_scan(key1, key2);
+		  }
+		  else {
+		    indScan = ((IntervalTreeFile)indFile).new_scan(key2, key1);
+		  }
+		  return indScan;
+	case AttrType.attrReal:
+	  /*
+	    if ((FloatKey)key1.getKey().floatValue() < (FloatKey)key2.getKey().floatValue()) {
+	    indScan = ((BTreeFile)indFile).new_scan(key1, key2);
+	    }
+	    else {
+	    indScan = ((BTreeFile)indFile).new_scan(key2, key1);
+	    }
+	    return indScan;
+	  */
+	default:
+	  // error condition
+	  throw new UnknownKeyTypeException("IndexUtils.java: Only Integer and String keys are supported so far");	
+	}
+      } // end of else 
+      
+    }
   
 }

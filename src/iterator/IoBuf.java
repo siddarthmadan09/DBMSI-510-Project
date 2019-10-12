@@ -185,10 +185,25 @@ public class IoBuf implements GlobalConst{
       else
 	{
 	  // All the tuples are in the buffer, just read them out.
+    	  done=false;
+    	  
 	  t_rd_from_pg = 0;
 	  curr_page    = 0;
 	}
     }   
+   public void close()
+   {
+		
+		i_buf.close();
+		System.out.println("closing in iobuf");
+		try {
+			_temp_fd.deleteFile();
+		} catch (InvalidSlotNumberException | FileAlreadyDeletedException | InvalidTupleSizeException
+				| HFBufMgrException | HFDiskMgrException | IOException e) { // TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		 
+   }
   
   public static final int WRITE_BUFFER =0;
   public static final int READ_BUFFER  =1;

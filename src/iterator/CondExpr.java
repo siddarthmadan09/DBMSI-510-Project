@@ -33,7 +33,7 @@ public class CondExpr {
    * Pointer to the next element in linked list
    */    
   public CondExpr    next;   
-  
+  public int flag;
   /**
    *constructor
    */
@@ -46,6 +46,7 @@ public class CondExpr {
     operand2.integer = 0;
     
     next = null;
+    flag = -1;
   }
 }
 

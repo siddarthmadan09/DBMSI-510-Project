@@ -11,7 +11,7 @@ public class pnodeSplayPQ extends pnodePQ
 {
 
   /** the root of the tree */
-  protected pnodeSplayNode   root;
+  protected pnodeSplayNode   root; 
   /*
   pnodeSplayNode*   leftmost();
   pnodeSplayNode*   rightmost();
@@ -66,7 +66,7 @@ public class pnodeSplayPQ extends pnodePQ
       root = newnode;
       return;
     }
-    
+ 
     int comp = pnodeCMP(item, t.item);
     
     pnodeSplayNode l = pnodeSplayNode.dummy;
@@ -75,7 +75,11 @@ public class pnodeSplayPQ extends pnodePQ
     boolean done = false;
 
     while (!done) {
-      if ((sort_order.tupleOrder == TupleOrder.Ascending && comp >= 0) || (sort_order.tupleOrder == TupleOrder.Descending && comp <= 0)) {
+      if (
+    	(sort_order.tupleOrder == TupleOrder.Ascending && comp >= 0) ||
+    	(sort_order.tupleOrder == TupleOrder.Descending && comp <= 0)
+    	) {
+    	  
 	pnodeSplayNode tr = t.rt;
 	if (tr == null) {
 	  tr = newnode;

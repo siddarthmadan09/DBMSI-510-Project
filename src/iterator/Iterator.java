@@ -130,4 +130,6 @@ public abstract class Iterator implements Flags {
     return tmpId;
 
   } // end of newPage
+
+public abstract int getFinalTupleSize();
 }

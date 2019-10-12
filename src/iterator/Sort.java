@@ -66,7 +66,7 @@ public class Sort extends Iterator implements GlobalConst
   {
     // don't know what will happen if n_R_runs > _n_pages
     if (n_R_runs > _n_pages) 
-      throw new LowMemException("Sort.java: Not enough memory to sort in two passes."); 
+      throw new LowMemException("Sort.java: Not enough memory to sort in " + Integer.toString(n_R_runs) + " passes. Current number is " + Integer.toString(_n_pages)); 
 
     int i;
     pnode cur_node;  // need pq_defs.java
@@ -211,8 +211,37 @@ public class Sort extends Iterator implements GlobalConst
       if (cur_node == null) break; 
       p_elems_curr_Q --;
       
+      if (sortFldType.attrType == AttrType.attrInterval) {
+    	  if (lastElem.getIntervalFld(_sort_fld).getStart() > cur_node.tuple.getIntervalFld(_sort_fld).getStart()) {
+    		  comp_res = -1;
+    	  } else if(lastElem.getIntervalFld(_sort_fld).getStart() < cur_node.tuple.getIntervalFld(_sort_fld).getStart()) {
+    		  comp_res = 1; 
+    	  } else if ((lastElem.getIntervalFld(_sort_fld).getEnd() > cur_node.tuple.getIntervalFld(_sort_fld).getEnd())){
+    		  comp_res = -1;
+    	  } else if ((lastElem.getIntervalFld(_sort_fld).getEnd() < cur_node.tuple.getIntervalFld(_sort_fld).getEnd())){
+              comp_res = 1;
+          }
+    	  else {
+    	      comp_res = 0;
+    	  }
+    		  
+      } else {
       comp_res = TupleUtils.CompareTupleWithValue(sortFldType, cur_node.tuple, _sort_fld, lastElem);  // need tuple_utils.java
-      
+      }
+//      if (sortFldType.attrType == AttrType.attrInterval) {
+//          
+//          try {
+//              if ((comp_res == 1 || comp_res == 0) && cur_node.tuple.getIntervalFld(_sort_fld).getStart() < lastElem.getIntervalFld(_sort_fld).getStart()) {
+//                  comp_res = -1;
+//              }
+//              else {
+//                  comp_res = 1;
+//              }
+//          } catch (FieldNumberOutOfBoundException e) {
+//              // TODO Auto-generated catch block
+//              comp_res = 1;
+//          }
+//      }
       if ((comp_res < 0 && order.tupleOrder == TupleOrder.Ascending) || (comp_res > 0 && order.tupleOrder == TupleOrder.Descending)) {
 	// doesn't fit in current run, put into the other queue
 	try {
@@ -491,6 +520,9 @@ public class Sort extends Iterator implements GlobalConst
       //      lastElem.setHdr(fld_no, junk, s_size);
       lastElem.setStrFld(_sort_fld, s);
       break;
+    case AttrType.attrInterval:
+    	lastElem.setIntervalFld(_sort_fld, Intervaltype.min_value());
+    	break;
     default:
       // don't know how to handle attrSymbol, attrNull
       //System.err.println("error in sort.java");
@@ -533,6 +565,8 @@ public class Sort extends Iterator implements GlobalConst
       //      lastElem.setHdr(fld_no, junk, s_size);
       lastElem.setStrFld(_sort_fld, s);
       break;
+    case AttrType.attrInterval:
+    	lastElem.setIntervalFld(_sort_fld, Intervaltype.max_value());
     default:
       // don't know how to handle attrSymbol, attrNull
       //System.err.println("error in sort.java");
@@ -569,6 +603,7 @@ public class Sort extends Iterator implements GlobalConst
     _in = new AttrType[len_in];
     n_cols = len_in;
     int n_strs = 0;
+
 
     for (int i=0; i<len_in; i++) {
       _in[i] = new AttrType(in[i].attrType);
@@ -713,11 +748,15 @@ public class Sort extends Iterator implements GlobalConst
        
       try {
 	_am.close();
+
       }
       catch (Exception e) {
 	throw new SortException(e, "Sort.java: error in closing iterator.");
       }
-
+     for(int i=0;i<i_buf.length;i++)
+      {
+  	  i_buf[i].close();
+      }
       if (useBM) {
 	try {
 	  free_buffer_pages(_n_pages, bufs_pids);
@@ -729,20 +768,30 @@ public class Sort extends Iterator implements GlobalConst
       }
       
       for (int i = 0; i<temp_files.length; i++) {
-	if (temp_files[i] != null) {
-	  try {
-	    temp_files[i].deleteFile();
-	  }
-	  catch (Exception e) {
-	    throw new SortException(e, "Sort.java: Heapfile error");
-	  }
-	  temp_files[i] = null; 
+	try {
+		if (temp_files[i] != null) {
+		  
+		    temp_files[i].deleteFile();
+		}
 	}
+		  catch (Exception e) {
+			  System.out.println(" ");
+			  //e.printStackTrace();
+		    //throw new SortException(e, "Sort.java: Heapfile error");
+		  }
+		  temp_files[i] = null; 
+		}
+	 
       }
       closeFlag = true;
-    } 
-  } 
+    }
 
+@Override
+public int getFinalTupleSize() {
+    // TODO Auto-generated method stub
+    return 0;
 }
+
+  } 
 
 

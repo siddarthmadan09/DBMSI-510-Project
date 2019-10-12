@@ -42,6 +42,7 @@ public class TupleUtils
       int   t1_i,  t2_i;
       float t1_r,  t2_r;
       String t1_s, t2_s;
+      Intervaltype t1_it, t2_it;
       
       switch (fldType.attrType) 
 	{
@@ -52,6 +53,7 @@ public class TupleUtils
 	  }catch (FieldNumberOutOfBoundException e){
 	    throw new TupleUtilsException(e, "FieldNumberOutOfBoundException is caught by TupleUtils.java");
 	  }
+	  if (t1_i <  t2_i && t1_i + 1 == t2_i) return 4;
 	  if (t1_i == t2_i) return  0;
 	  if (t1_i <  t2_i) return -1;
 	  if (t1_i >  t2_i) return  1;
@@ -79,7 +81,49 @@ public class TupleUtils
 	  if(t1_s.compareTo( t2_s)>0)return 1;
 	  if (t1_s.compareTo( t2_s)<0)return -1;
 	  return 0;
+	case AttrType.attrInterval:  // compare two interval types
+		try {
+		//System.out.println(" inside interval");
+		t1_it = t1.getIntervalFld(t1_fld_no);
+		t2_it = t2.getIntervalFld(t2_fld_no);
+		//System.out.println(" s1 " + t1_it.getStart() + " e1: " + t1_it.getEnd() + " s2: " + t2_it.getStart() + " e2: "+ t2_it.getEnd());
+		
+		if(t1_it.getStart() == t2_it.getStart())
+			return 5;
+		if(t1_it.getStart() <= t2_it.getStart() && t1_it.getEnd() >= t2_it.getEnd()) {
+			//System.out.println("if 1");
+			if(t2_it.getEnd() == Integer.MIN_VALUE)
+				return 4;
+			else	
+				return 1;  // containment
+			
+		} else if (t1_it.getStart() >= t2_it.getStart() && t1_it.getEnd() < t2_it.getEnd()) {
+			
+			if(t2_it.getEnd() == Integer.MAX_VALUE)
+				return 4;
+			return 2;  // enclosure
+		} else if ( (t1_it.getStart() > t2_it.getStart() && t1_it.getEnd() > t2_it.getEnd() ) ||
+				(t1_it.getStart() < t2_it.getStart() && t1_it.getEnd() < t2_it.getEnd() ) ) {
+			if ( t1_it.getEnd() < t2_it.getStart() || t2_it.getEnd() < t1_it.getStart() ) {
+				//System.out.println("if 3");
+				return 0;    // no overlap
+			} else {
+                //System.out.println("if 4");
+                return 3; // other overlaps 2 cases
+            }
+		}
+			return 3;
+
+                /*
+                 * if(t1_it.getStart()< t2_it.getStart()) { return -1; } else if
+                 * (t1_it.getStart()> t2_it.getStart()) { return 1; } else { return 0; }
+                 */
+		}	catch (FieldNumberOutOfBoundException e){
+			    throw new TupleUtilsException(e, "FieldNumberOutOfBoundException is caught by TupleUtils.java");
+	    }
+	
 	default:
+		System.out.println("attr type"+fldType.attrType);
 	  
 	  throw new UnknowAttrType(null, "Don't know how to handle attrSymbol, attrNull");
 	  
@@ -198,6 +242,15 @@ public class TupleUtils
 	    throw new TupleUtilsException(e, "FieldNumberOutOfBoundException is caught by TupleUtils.java");
 	  }
 	  break;
+	case AttrType.attrInterval:
+		try {
+			value.setIntervalFld(fld_no, tuple.getIntervalFld(fld_no));
+		}
+	
+		catch (FieldNumberOutOfBoundException e){
+		    throw new TupleUtilsException(e, "FieldNumberOutOfBoundException is caught by TupleUtils.java");
+		}
+		break;
 	default:
 	  throw new UnknowAttrType(null, "Don't know how to handle attrSymbol, attrNull");
 	  

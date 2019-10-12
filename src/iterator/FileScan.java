@@ -152,6 +152,12 @@ public class FileScan extends  Iterator
 	closeFlag = true;
       } 
     }
+
+@Override
+public int getFinalTupleSize() {
+    // TODO Auto-generated method stub
+    return 0;
+}
   
 }
 
